@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- App Sandbox: Required for Mac App Store and security -->
+	<!-- Implements: Req NFR-S2 -->
+	<key>com.apple.security.app-sandbox</key>
+	<true/>
+
+	<!-- User-selected read-only file access -->
+	<!-- Implements: Req NFR-S2, 1.1, 1.3, 1.6 -->
+	<key>com.apple.security.files.user-selected.read-only</key>
+	<true/>
+
+	<!-- User-selected read-write file access (for exports) -->
+	<!-- Implements: Req NFR-S2, 9.5 -->
+	<key>com.apple.security.files.user-selected.read-write</key>
+	<true/>
+
+	<!-- Hardened Runtime: Required for notarization -->
+	<!-- Implements: Req NFR-S3 -->
+	<!-- Note: Hardened runtime is enabled in build settings, not entitlements -->
+
+</dict>
+</plist>

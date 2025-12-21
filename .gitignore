@@ -1,0 +1,110 @@
+# ===================
+# macOS
+# ===================
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# ===================
+# Xcode
+# ===================
+## User settings
+xcuserdata/
+*.xcuserstate
+
+## Build artifacts
+build/
+DerivedData/
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+
+## Obj-C/Swift specific
+*.hmap
+
+## App packaging
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+## Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+# ===================
+# Swift Package Manager
+# ===================
+.build/
+.swiftpm/
+Package.resolved
+
+# ===================
+# CocoaPods
+# ===================
+Pods/
+
+# ===================
+# Carthage
+# ===================
+Carthage/Build/
+
+# ===================
+# Fastlane
+# ===================
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# ===================
+# IDE / Editor
+# ===================
+.cursor/
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ===================
+# Project Documents (Not part of app)
+# ===================
+Planning/
+BUILD_INSTRUCTIONS.md
+MAINTENANCE.md
+CLAUDE.md
+
+# ===================
+# Scripts (Development only)
+# ===================
+scripts/
+
+# ===================
+# Source assets (not needed for build)
+# ===================
+AppIcon.svg
+
+# ===================
+# Large binary resources (should be downloaded separately or via LFS)
+# ===================
+# Uncomment if using Git LFS for these:
+# A-IQ/Resources/*.mlmodelc
+# A-IQ/Resources/c2patool

@@ -1,0 +1,679 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AAA00001 /* AIQApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10001; };
+		AAA00002 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10002; };
+		AAA00003 /* AppCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10003; };
+		AAA00004 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10004; };
+		AAA00010 /* AnalysisRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10010; };
+		AAA00011 /* DetectionResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10011; };
+		AAA00012 /* MLDetectionResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10012; };
+		AAA00013 /* ProvenanceResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10013; };
+		AAA00014 /* MetadataResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10014; };
+		AAA00015 /* ForensicResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10015; };
+		AAA00016 /* AggregatedResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10016; };
+		AAA00017 /* AnalysisRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10017; };
+		AAA00020 /* ImageInputHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10020; };
+		AAA00030 /* AnalysisOrchestrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10030; };
+		AAA00031 /* ResultAggregator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10031; };
+		AAA00040 /* MLDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10040; };
+		AAA00041 /* ProvenanceChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10041; };
+		AAA00042 /* MetadataAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10042; };
+		AAA00043 /* ForensicAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10043; };
+		AAA00050 /* ResultsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10050; };
+		AAA00060 /* ReportGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10060; };
+		AAA00070 /* SettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10070; };
+		AAA00080 /* AnalysisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10080; };
+		AAA00081 /* ResultsDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10081; };
+		AAA00082 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10082; };
+		AAA00083 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10083; };
+		AAA00090 /* DropZoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10090; };
+		AAA00091 /* ConfidenceGaugeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10091; };
+		AAA00092 /* SignalBreakdownView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10092; };
+		AAA00093 /* ProvenanceChainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10093; };
+		AAA00094 /* ELAOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10094; };
+		AAA00095 /* MetadataPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10095; };
+		AAA00096 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10096; };
+		AAA00100 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AAA10100; };
+		AAA00102 /* AIDetector.mlmodelc in Resources */ = {isa = PBXBuildFile; fileRef = AAA10102; };
+		AAA00103 /* c2patool in Resources */ = {isa = PBXBuildFile; fileRef = AAA10103; };
+		BBB00001 /* ClassificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBB10001; };
+		BBB00002 /* ResultAggregatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBB10002; };
+		BBB00003 /* MetadataAnalyzerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBB10003; };
+		BBB00004 /* ImageInputHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBB10004; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		BBB20001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AAA70000;
+			proxyType = 1;
+			remoteGlobalIDString = AAA50000;
+			remoteInfo = "A-IQ";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		AAA10001 /* AIQApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIQApp.swift; sourceTree = "<group>"; };
+		AAA10002 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		AAA10003 /* AppCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCommands.swift; sourceTree = "<group>"; };
+		AAA10004 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		AAA10010 /* AnalysisRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisRequest.swift; sourceTree = "<group>"; };
+		AAA10011 /* DetectionResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionResult.swift; sourceTree = "<group>"; };
+		AAA10012 /* MLDetectionResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MLDetectionResult.swift; sourceTree = "<group>"; };
+		AAA10013 /* ProvenanceResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProvenanceResult.swift; sourceTree = "<group>"; };
+		AAA10014 /* MetadataResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetadataResult.swift; sourceTree = "<group>"; };
+		AAA10015 /* ForensicResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForensicResult.swift; sourceTree = "<group>"; };
+		AAA10016 /* AggregatedResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AggregatedResult.swift; sourceTree = "<group>"; };
+		AAA10017 /* AnalysisRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisRecord.swift; sourceTree = "<group>"; };
+		AAA10020 /* ImageInputHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageInputHandler.swift; sourceTree = "<group>"; };
+		AAA10030 /* AnalysisOrchestrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisOrchestrator.swift; sourceTree = "<group>"; };
+		AAA10031 /* ResultAggregator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultAggregator.swift; sourceTree = "<group>"; };
+		AAA10040 /* MLDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MLDetector.swift; sourceTree = "<group>"; };
+		AAA10041 /* ProvenanceChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProvenanceChecker.swift; sourceTree = "<group>"; };
+		AAA10042 /* MetadataAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetadataAnalyzer.swift; sourceTree = "<group>"; };
+		AAA10043 /* ForensicAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForensicAnalyzer.swift; sourceTree = "<group>"; };
+		AAA10050 /* ResultsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultsStore.swift; sourceTree = "<group>"; };
+		AAA10060 /* ReportGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportGenerator.swift; sourceTree = "<group>"; };
+		AAA10070 /* SettingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsManager.swift; sourceTree = "<group>"; };
+		AAA10080 /* AnalysisView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisView.swift; sourceTree = "<group>"; };
+		AAA10081 /* ResultsDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultsDetailView.swift; sourceTree = "<group>"; };
+		AAA10082 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
+		AAA10083 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		AAA10090 /* DropZoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DropZoneView.swift; sourceTree = "<group>"; };
+		AAA10091 /* ConfidenceGaugeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfidenceGaugeView.swift; sourceTree = "<group>"; };
+		AAA10092 /* SignalBreakdownView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalBreakdownView.swift; sourceTree = "<group>"; };
+		AAA10093 /* ProvenanceChainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProvenanceChainView.swift; sourceTree = "<group>"; };
+		AAA10094 /* ELAOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ELAOverlayView.swift; sourceTree = "<group>"; };
+		AAA10095 /* MetadataPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetadataPanel.swift; sourceTree = "<group>"; };
+		AAA10096 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
+		AAA10100 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AAA10102 /* AIDetector.mlmodelc */ = {isa = PBXFileReference; lastKnownFileType = folder; path = AIDetector.mlmodelc; sourceTree = "<group>"; };
+		AAA10103 /* c2patool */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = c2patool; sourceTree = "<group>"; };
+		AAA10101 /* A-IQ.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "A-IQ.entitlements"; sourceTree = "<group>"; };
+		AAA20000 /* A-IQ.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "A-IQ.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		BBB10001 /* ClassificationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassificationTests.swift; sourceTree = "<group>"; };
+		BBB10002 /* ResultAggregatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultAggregatorTests.swift; sourceTree = "<group>"; };
+		BBB10003 /* MetadataAnalyzerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetadataAnalyzerTests.swift; sourceTree = "<group>"; };
+		BBB10004 /* ImageInputHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageInputHandlerTests.swift; sourceTree = "<group>"; };
+		BBB20000 /* A-IQTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "A-IQTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AAA30000 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BBB30000 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		AAA40000 = {
+			isa = PBXGroup;
+			children = (
+				AAA40001 /* A-IQ */,
+				BBB40000 /* A-IQTests */,
+				AAA20000 /* A-IQ.app */,
+				BBB20000 /* A-IQTests.xctest */,
+			);
+			sourceTree = "<group>";
+		};
+		AAA40001 /* A-IQ */ = {
+			isa = PBXGroup;
+			children = (
+				AAA40003 /* App */,
+				AAA40004 /* Models */,
+				AAA40005 /* Input */,
+				AAA40006 /* Analysis */,
+				AAA40007 /* Detectors */,
+				AAA40008 /* Storage */,
+				AAA40009 /* Export */,
+				AAA4000A /* Settings */,
+				AAA4000B /* Views */,
+				AAA4000C /* Resources */,
+				AAA10101 /* A-IQ.entitlements */,
+			);
+			path = "A-IQ";
+			sourceTree = "<group>";
+		};
+		AAA40003 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				AAA10001 /* AIQApp.swift */,
+				AAA10002 /* AppState.swift */,
+				AAA10003 /* AppCommands.swift */,
+				AAA10004 /* ContentView.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		AAA40004 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				AAA10010 /* AnalysisRequest.swift */,
+				AAA10011 /* DetectionResult.swift */,
+				AAA10012 /* MLDetectionResult.swift */,
+				AAA10013 /* ProvenanceResult.swift */,
+				AAA10014 /* MetadataResult.swift */,
+				AAA10015 /* ForensicResult.swift */,
+				AAA10016 /* AggregatedResult.swift */,
+				AAA10017 /* AnalysisRecord.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		AAA40005 /* Input */ = {
+			isa = PBXGroup;
+			children = (
+				AAA10020 /* ImageInputHandler.swift */,
+			);
+			path = Input;
+			sourceTree = "<group>";
+		};
+		AAA40006 /* Analysis */ = {
+			isa = PBXGroup;
+			children = (
+				AAA10030 /* AnalysisOrchestrator.swift */,
+				AAA10031 /* ResultAggregator.swift */,
+			);
+			path = Analysis;
+			sourceTree = "<group>";
+		};
+		AAA40007 /* Detectors */ = {
+			isa = PBXGroup;
+			children = (
+				AAA10040 /* MLDetector.swift */,
+				AAA10041 /* ProvenanceChecker.swift */,
+				AAA10042 /* MetadataAnalyzer.swift */,
+				AAA10043 /* ForensicAnalyzer.swift */,
+			);
+			path = Detectors;
+			sourceTree = "<group>";
+		};
+		AAA40008 /* Storage */ = {
+			isa = PBXGroup;
+			children = (
+				AAA10050 /* ResultsStore.swift */,
+			);
+			path = Storage;
+			sourceTree = "<group>";
+		};
+		AAA40009 /* Export */ = {
+			isa = PBXGroup;
+			children = (
+				AAA10060 /* ReportGenerator.swift */,
+			);
+			path = Export;
+			sourceTree = "<group>";
+		};
+		AAA4000A /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				AAA10070 /* SettingsManager.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		AAA4000B /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				AAA10080 /* AnalysisView.swift */,
+				AAA10081 /* ResultsDetailView.swift */,
+				AAA10082 /* HistoryView.swift */,
+				AAA10083 /* SettingsView.swift */,
+				AAA4000D /* Components */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		AAA4000C /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				AAA10100 /* Assets.xcassets */,
+				AAA10102 /* AIDetector.mlmodelc */,
+				AAA10103 /* c2patool */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		AAA4000D /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				AAA10090 /* DropZoneView.swift */,
+				AAA10091 /* ConfidenceGaugeView.swift */,
+				AAA10092 /* SignalBreakdownView.swift */,
+				AAA10093 /* ProvenanceChainView.swift */,
+				AAA10094 /* ELAOverlayView.swift */,
+				AAA10095 /* MetadataPanel.swift */,
+				AAA10096 /* WelcomeView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		BBB40000 /* A-IQTests */ = {
+			isa = PBXGroup;
+			children = (
+				BBB10001 /* ClassificationTests.swift */,
+				BBB10002 /* ResultAggregatorTests.swift */,
+				BBB10003 /* MetadataAnalyzerTests.swift */,
+				BBB10004 /* ImageInputHandlerTests.swift */,
+			);
+			path = "A-IQTests";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AAA50000 /* A-IQ */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AAA60000;
+			buildPhases = (
+				AAA50001 /* Sources */,
+				AAA30000 /* Frameworks */,
+				AAA50002 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "A-IQ";
+			productName = "A-IQ";
+			productReference = AAA20000 /* A-IQ.app */;
+			productType = "com.apple.product-type.application";
+		};
+		BBB50000 /* A-IQTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BBB60000;
+			buildPhases = (
+				BBB50001 /* Sources */,
+				BBB30000 /* Frameworks */,
+				BBB50002 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BBB50003 /* PBXTargetDependency */,
+			);
+			name = "A-IQTests";
+			productName = "A-IQTests";
+			productReference = BBB20000 /* A-IQTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AAA70000 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					AAA50000 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+					BBB50000 = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = AAA50000;
+					};
+				};
+			};
+			buildConfigurationList = AAA70001;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = AAA40000;
+			productRefGroup = AAA40000;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AAA50000 /* A-IQ */,
+				BBB50000 /* A-IQTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AAA50002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AAA00100 /* Assets.xcassets in Resources */,
+				AAA00102 /* AIDetector.mlmodelc in Resources */,
+				AAA00103 /* c2patool in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BBB50002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AAA50001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AAA00001 /* AIQApp.swift in Sources */,
+				AAA00002 /* AppState.swift in Sources */,
+				AAA00003 /* AppCommands.swift in Sources */,
+				AAA00004 /* ContentView.swift in Sources */,
+				AAA00010 /* AnalysisRequest.swift in Sources */,
+				AAA00011 /* DetectionResult.swift in Sources */,
+				AAA00012 /* MLDetectionResult.swift in Sources */,
+				AAA00013 /* ProvenanceResult.swift in Sources */,
+				AAA00014 /* MetadataResult.swift in Sources */,
+				AAA00015 /* ForensicResult.swift in Sources */,
+				AAA00016 /* AggregatedResult.swift in Sources */,
+				AAA00017 /* AnalysisRecord.swift in Sources */,
+				AAA00020 /* ImageInputHandler.swift in Sources */,
+				AAA00030 /* AnalysisOrchestrator.swift in Sources */,
+				AAA00031 /* ResultAggregator.swift in Sources */,
+				AAA00040 /* MLDetector.swift in Sources */,
+				AAA00041 /* ProvenanceChecker.swift in Sources */,
+				AAA00042 /* MetadataAnalyzer.swift in Sources */,
+				AAA00043 /* ForensicAnalyzer.swift in Sources */,
+				AAA00050 /* ResultsStore.swift in Sources */,
+				AAA00060 /* ReportGenerator.swift in Sources */,
+				AAA00070 /* SettingsManager.swift in Sources */,
+				AAA00080 /* AnalysisView.swift in Sources */,
+				AAA00081 /* ResultsDetailView.swift in Sources */,
+				AAA00082 /* HistoryView.swift in Sources */,
+				AAA00083 /* SettingsView.swift in Sources */,
+				AAA00090 /* DropZoneView.swift in Sources */,
+				AAA00091 /* ConfidenceGaugeView.swift in Sources */,
+				AAA00092 /* SignalBreakdownView.swift in Sources */,
+				AAA00093 /* ProvenanceChainView.swift in Sources */,
+				AAA00094 /* ELAOverlayView.swift in Sources */,
+				AAA00095 /* MetadataPanel.swift in Sources */,
+				AAA00096 /* WelcomeView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BBB50001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BBB00001 /* ClassificationTests.swift in Sources */,
+				BBB00002 /* ResultAggregatorTests.swift in Sources */,
+				BBB00003 /* MetadataAnalyzerTests.swift in Sources */,
+				BBB00004 /* ImageInputHandlerTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		BBB50003 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AAA50000 /* A-IQ */;
+			targetProxy = BBB20001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		AAA80000 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		AAA80001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		AAA80002 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "A-IQ/A-IQ.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "A-IQ";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.aiq.A-IQ";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		AAA80003 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "A-IQ/A-IQ.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "A-IQ";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.aiq.A-IQ";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		BBB80000 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.aiq.A-IQTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/A-IQ.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/A-IQ";
+			};
+			name = Debug;
+		};
+		BBB80001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.aiq.A-IQTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/A-IQ.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/A-IQ";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AAA60000 /* Build configuration list for PBXNativeTarget "A-IQ" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AAA80002 /* Debug */,
+				AAA80003 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AAA70001 /* Build configuration list for PBXProject "A-IQ" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AAA80000 /* Debug */,
+				AAA80001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BBB60000 /* Build configuration list for PBXNativeTarget "A-IQTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BBB80000 /* Debug */,
+				BBB80001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = AAA70000 /* Project object */;
+}

@@ -1,0 +1,64 @@
+# SwiftLint configuration for A-IQ
+
+# Disable rules that conflict with image processing code patterns
+disabled_rules:
+  - todo  # TODOs are tracked separately
+  - trailing_comma  # SwiftFormat adds trailing commas, which is valid Swift style
+  - opening_brace  # SwiftFormat handles brace placement
+
+# Configure identifier name rules for image processing
+identifier_name:
+  min_length:
+    warning: 1  # Allow single-letter variables for loops and coordinates
+  excluded:
+    - x
+    - y
+    - i
+    - j
+    - r
+    - g
+    - b
+    - id
+
+# Allow larger tuples for internal helper functions
+large_tuple:
+  warning: 5
+  error: 6
+
+# Allow more parameters for internal aggregation functions
+function_parameter_count:
+  warning: 10
+  error: 12
+
+# Line length configuration
+line_length:
+  warning: 140
+  error: 200
+  ignores_comments: true
+  ignores_urls: true
+
+# File length for comprehensive detector implementations
+file_length:
+  warning: 500
+  error: 800
+
+# Function body length for complex analysis functions
+function_body_length:
+  warning: 80
+  error: 150
+
+# Cyclomatic complexity for analysis logic
+cyclomatic_complexity:
+  warning: 15
+  error: 25
+
+# Type body length for comprehensive generator implementations
+type_body_length:
+  warning: 400
+  error: 600
+
+# Excluded paths
+excluded:
+  - .build
+  - DerivedData
+  - Tests

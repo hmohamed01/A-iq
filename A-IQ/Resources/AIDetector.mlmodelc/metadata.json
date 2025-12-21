@@ -1,0 +1,81 @@
+[
+  {
+    "shortDescription" : "AI-generated image detector (SigLIP architecture). Trained on modern generators: Midjourney v6.1, Flux 1.1 Pro, Stable Diffusion 3.5, GPT-4o. Accuracy: 99.23%.",
+    "metadataOutputVersion" : "3.0",
+    "outputSchema" : [
+      {
+        "hasShapeFlexibility" : "0",
+        "isOptional" : "0",
+        "dataType" : "Float16",
+        "formattedType" : "MultiArray (Float16 1 × 2)",
+        "shortDescription" : "",
+        "shape" : "[1, 2]",
+        "name" : "probs",
+        "type" : "MultiArray"
+      }
+    ],
+    "version" : "2.0.0",
+    "modelParameters" : [
+
+    ],
+    "author" : "Agentic Studio",
+    "specificationVersion" : 8,
+    "storagePrecision" : "Float16",
+    "license" : "Apache 2.0",
+    "mlProgramOperationTypeHistogram" : {
+      "Ios17.mul" : 13,
+      "Ios17.linear" : 73,
+      "Ios17.transpose" : 49,
+      "Ios17.matmul" : 24,
+      "Ios17.conv" : 1,
+      "Ios17.add" : 26,
+      "Ios16.reduceMean" : 1,
+      "Ios16.softmax" : 13,
+      "Ios16.gelu" : 12,
+      "Ios17.reshape" : 49,
+      "Ios17.layerNorm" : 25,
+      "Ios17.cast" : 1
+    },
+    "computePrecision" : "Mixed (Float16, Float32, Int32)",
+    "stateSchema" : [
+
+    ],
+    "isUpdatable" : "0",
+    "availability" : {
+      "macOS" : "14.0",
+      "tvOS" : "17.0",
+      "visionOS" : "1.0",
+      "watchOS" : "10.0",
+      "iOS" : "17.0",
+      "macCatalyst" : "17.0"
+    },
+    "modelType" : {
+      "name" : "MLModelType_mlProgram"
+    },
+    "inputSchema" : [
+      {
+        "height" : "224",
+        "colorspace" : "RGB",
+        "isOptional" : "0",
+        "width" : "224",
+        "isColor" : "1",
+        "formattedType" : "Image (Color 224 × 224)",
+        "hasSizeFlexibility" : "0",
+        "type" : "Image",
+        "shortDescription" : "",
+        "name" : "image"
+      }
+    ],
+    "userDefinedMetadata" : {
+      "com.github.apple.coremltools.source" : "torch==2.9.1",
+      "com.github.apple.coremltools.source_dialect" : "TorchScript",
+      "com.github.apple.coremltools.conversion_date" : "2025-12-20",
+      "com.github.apple.coremltools.version" : "9.0",
+      "class_labels" : "ai,hum",
+      "input_size" : "224",
+      "source_model" : "Ateeqq\/ai-vs-human-image-detector"
+    },
+    "generatedClassName" : "AIDetector",
+    "method" : "predict"
+  }
+]
