@@ -66,33 +66,46 @@ actor ImageInputHandler {
 
     /// Present file picker for image selection
     /// Implements: Req 1.3, 1.4
-    @MainActor
-    func presentFilePicker(allowsMultiple: Bool = true) async -> [URL] {
-        let panel = NSOpenPanel()
-        panel.canChooseFiles = true
-        panel.canChooseDirectories = false
-        panel.allowsMultipleSelection = allowsMultiple
-        panel.allowedContentTypes = Self.supportedUTTypes
+    /// Note: nonisolated to avoid actor-hopping overhead
+    nonisolated func presentFilePicker(allowsMultiple: Bool = true) async -> [URL] {
+        await withCheckedContinuation { continuation in
+            DispatchQueue.main.async {
+                let panel = NSOpenPanel()
+                panel.canChooseFiles = true
+                panel.canChooseDirectories = false
+                panel.allowsMultipleSelection = allowsMultiple
+                panel.allowedContentTypes = Self.supportedUTTypes
 
-        let response = await panel.begin()
-        guard response == .OK else { return [] }
-
-        return panel.urls
+                panel.begin { response in
+                    if response == .OK {
+                        continuation.resume(returning: panel.urls)
+                    } else {
+                        continuation.resume(returning: [])
+                    }
+                }
+            }
+        }
     }
 
     /// Present folder picker for batch analysis
     /// Implements: Req 1.6
-    @MainActor
-    func presentFolderPicker() async -> URL? {
-        let panel = NSOpenPanel()
-        panel.canChooseFiles = false
-        panel.canChooseDirectories = true
-        panel.allowsMultipleSelection = false
+    nonisolated func presentFolderPicker() async -> URL? {
+        await withCheckedContinuation { continuation in
+            DispatchQueue.main.async {
+                let panel = NSOpenPanel()
+                panel.canChooseFiles = false
+                panel.canChooseDirectories = true
+                panel.allowsMultipleSelection = false
 
-        let response = await panel.begin()
-        guard response == .OK else { return nil }
-
-        return panel.url
+                panel.begin { response in
+                    if response == .OK {
+                        continuation.resume(returning: panel.url)
+                    } else {
+                        continuation.resume(returning: nil)
+                    }
+                }
+            }
+        }
     }
 
     // MARK: Clipboard
