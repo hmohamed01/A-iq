@@ -90,6 +90,30 @@ struct AggregatedResult: Identifiable, Sendable {
         self.totalAnalysisTimeMs = totalAnalysisTimeMs
     }
 
+    // MARK: Copy Methods
+
+    /// Create a copy with the thumbnail restored (used when loading from history)
+    func withThumbnail(_ thumbnail: CGImage) -> AggregatedResult {
+        AggregatedResult(
+            id: id,
+            imageSource: imageSource,
+            timestamp: timestamp,
+            imageThumbnail: thumbnail,
+            imageSize: imageSize,
+            fileSizeBytes: fileSizeBytes,
+            overallScore: overallScore,
+            classification: classification,
+            isDefinitive: isDefinitive,
+            summary: summary,
+            mlResult: mlResult,
+            provenanceResult: provenanceResult,
+            metadataResult: metadataResult,
+            forensicResult: forensicResult,
+            signalBreakdown: signalBreakdown,
+            totalAnalysisTimeMs: totalAnalysisTimeMs
+        )
+    }
+
     // MARK: Computed Properties
 
     /// Percentage display of overall score

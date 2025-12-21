@@ -97,7 +97,27 @@ final class AnalysisRecord {
     func decodeResult() throws -> AggregatedResult {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-        return try decoder.decode(AggregatedResult.self, from: resultJSON)
+        var result = try decoder.decode(AggregatedResult.self, from: resultJSON)
+
+        // Restore thumbnail from stored data (CGImage isn't Codable)
+        if let data = thumbnailData, let thumbnail = cgImageFromData(data) {
+            result = result.withThumbnail(thumbnail)
+        }
+
+        return result
+    }
+
+    /// Convert stored thumbnail data back to CGImage
+    private func cgImageFromData(_ data: Data) -> CGImage? {
+        #if os(macOS)
+        guard let nsImage = NSImage(data: data),
+              let cgImage = nsImage.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
+            return nil
+        }
+        return cgImage
+        #else
+        return nil
+        #endif
     }
 
     /// Get the classification enum value
