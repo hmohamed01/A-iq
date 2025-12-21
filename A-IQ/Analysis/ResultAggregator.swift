@@ -367,10 +367,19 @@ struct ResultAggregator {
         // Without corroboration, we're more skeptical of ML-only assessments
         let amplificationFactor: Double = hasCorroboration ? 1.0 : 0.5
 
-        // For extremely high ML scores (>=99%), trust ML fully
-        // The ML model is highly accurate at these confidence levels
+        // For extremely high ML scores (>=99%)
+        // Only trust fully if corroborated; otherwise be more conservative
+        // This reduces false positives on professional portraits
         if mlScore >= 0.99 {
-            return mlScore
+            if hasCorroboration {
+                return mlScore
+            } else {
+                // Without corroboration, cap the score to avoid confident false positives
+                // Blend: 75% ML, 25% base - pulls score down to ~75-85% range
+                let blendedScore = mlScore * 0.75 + baseScore * 0.25
+                // Cap at 85% without corroboration to indicate uncertainty
+                return min(blendedScore, 0.85)
+            }
         }
 
         // For very high ML scores (>98% but <99%)
@@ -378,9 +387,9 @@ struct ResultAggregator {
             if hasCorroboration {
                 return mlScore
             } else {
-                // Even without corroboration, trust ML at extreme scores
-                // Blend minimally: 97% ML, 3% base
-                return mlScore * 0.97 + baseScore * 0.03
+                // Blend more conservatively without corroboration
+                let blendedScore = mlScore * 0.70 + baseScore * 0.30
+                return min(blendedScore, 0.80)
             }
         }
 
@@ -405,9 +414,16 @@ struct ResultAggregator {
             return amplifiedScore
         }
 
-        // For extremely low ML scores (<=1%), trust ML fully
+        // For extremely low ML scores (<=1%)
+        // Only trust fully if corroborated; otherwise be conservative
         if mlScore <= 0.01 {
-            return mlScore
+            if hasCorroboration {
+                return mlScore
+            } else {
+                // Without corroboration, pull toward 15% to indicate some uncertainty
+                let blendedScore = mlScore * 0.75 + baseScore * 0.25
+                return max(blendedScore, 0.15)
+            }
         }
 
         // For very low ML scores (<2% but >1% = certainly authentic)
@@ -415,7 +431,8 @@ struct ResultAggregator {
             if hasCorroboration {
                 return mlScore
             } else {
-                return mlScore * 0.85 + baseScore * 0.15
+                let blendedScore = mlScore * 0.70 + baseScore * 0.30
+                return max(blendedScore, 0.20)
             }
         }
 
