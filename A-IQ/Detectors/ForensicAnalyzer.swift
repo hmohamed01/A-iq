@@ -14,6 +14,10 @@ actor ForensicAnalyzer {
 
     private let ciContext: CIContext
 
+    /// Cached FFT setup for 256-point FFT (log2(256) = 8)
+    private var fftSetup: FFTSetup?
+    private let fftLog2n: vDSP_Length = 8 // For 256-point FFT
+
     // MARK: Initialization
 
     init() {
@@ -22,6 +26,16 @@ actor ForensicAnalyzer {
             .useSoftwareRenderer: false,
             .highQualityDownsample: true,
         ])
+
+        // Pre-create FFT setup (expensive operation, do once)
+        fftSetup = vDSP_create_fftsetup(fftLog2n, FFTRadix(kFFTRadix2))
+    }
+
+    deinit {
+        // Clean up FFT setup
+        if let setup = fftSetup {
+            vDSP_destroy_fftsetup(setup)
+        }
     }
 
     // MARK: Analysis
@@ -779,14 +793,12 @@ extension ForensicAnalyzer {
 
     /// Compute 2D FFT using Accelerate vDSP
     private func compute2DFFT(data: [Float], size: Int) -> ([Float], CGImage?)? {
-        let log2n = vDSP_Length(log2(Float(size)))
         let halfSize = size / 2
 
-        // Create FFT setup
-        guard let fftSetup = vDSP_create_fftsetup(log2n, FFTRadix(kFFTRadix2)) else {
+        // Use cached FFT setup (size must be 256 to match cached setup)
+        guard size == 256, let fftSetup = self.fftSetup else {
             return nil
         }
-        defer { vDSP_destroy_fftsetup(fftSetup) }
 
         // Prepare split complex arrays for 2D FFT
         var realPart = data
@@ -810,7 +822,7 @@ extension ForensicAnalyzer {
                         realp: realPtr.baseAddress!,
                         imagp: imagPtr.baseAddress!
                     )
-                    vDSP_fft_zip(fftSetup, &rowSplit, 1, log2n, FFTDirection(FFT_FORWARD))
+                    vDSP_fft_zip(fftSetup, &rowSplit, 1, self.fftLog2n, FFTDirection(FFT_FORWARD))
                 }
             }
 
@@ -839,7 +851,7 @@ extension ForensicAnalyzer {
                         realp: realPtr.baseAddress!,
                         imagp: imagPtr.baseAddress!
                     )
-                    vDSP_fft_zip(fftSetup, &colSplit, 1, log2n, FFTDirection(FFT_FORWARD))
+                    vDSP_fft_zip(fftSetup, &colSplit, 1, self.fftLog2n, FFTDirection(FFT_FORWARD))
                 }
             }
 
