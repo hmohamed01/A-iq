@@ -367,14 +367,19 @@ struct ResultAggregator {
         // Without corroboration, we're more skeptical of ML-only assessments
         let amplificationFactor: Double = hasCorroboration ? 1.0 : 0.5
 
-        // For extremely high ML scores (>98%), trust ML strongly
+        // For extremely high ML scores (>=99%), trust ML fully
         // The ML model is highly accurate at these confidence levels
+        if mlScore >= 0.99 {
+            return mlScore
+        }
+
+        // For very high ML scores (>98% but <99%)
         if mlScore > 0.98 {
             if hasCorroboration {
                 return mlScore
             } else {
                 // Even without corroboration, trust ML at extreme scores
-                // Blend minimally: 97% ML, 3% base (allows reaching ~99% minimum)
+                // Blend minimally: 97% ML, 3% base
                 return mlScore * 0.97 + baseScore * 0.03
             }
         }
@@ -400,7 +405,12 @@ struct ResultAggregator {
             return amplifiedScore
         }
 
-        // For low ML scores (<2% = certainly authentic)
+        // For extremely low ML scores (<=1%), trust ML fully
+        if mlScore <= 0.01 {
+            return mlScore
+        }
+
+        // For very low ML scores (<2% but >1% = certainly authentic)
         if mlScore < 0.02 {
             if hasCorroboration {
                 return mlScore
