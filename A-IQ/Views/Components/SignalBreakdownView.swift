@@ -2,7 +2,7 @@ import SwiftUI
 
 // MARK: - Signal Breakdown View
 
-/// Circular signal breakdown with circular progress indicators
+/// Signal breakdown with horizontal progress bars
 /// Implements: Req 7.3
 struct SignalBreakdownView: View {
     let breakdown: SignalBreakdown
@@ -22,55 +22,57 @@ struct SignalBreakdownView: View {
     // MARK: Signal Row
 
     private func signalRow(name: String, contribution: SignalContribution, weight: Double) -> some View {
-        HStack(spacing: AIQSpacing.md) {
-            // Circular progress indicator (Circular "pie")
-            ZStack {
-                Circle()
-                    .stroke(AIQColors.subtleBorder, lineWidth: 3)
-
-                if contribution.isAvailable {
-                    Circle()
-                        .trim(from: 0, to: contribution.rawScore)
-                        .stroke(
-                            scoreColor(for: contribution.rawScore),
-                            style: StrokeStyle(lineWidth: 3, lineCap: .round)
-                        )
-                        .rotationEffect(.degrees(-90))
-                }
-            }
-            .frame(width: 28, height: 28)
-
-            VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: AIQSpacing.xs) {
+            // Header row with name, score, and weight
+            HStack {
                 Text(name)
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(contribution.isAvailable ? AIQColors.primaryText : AIQColors.tertiaryText)
 
+                Spacer()
+
                 if contribution.isAvailable {
-                    Text(classificationLabel(for: contribution.rawScore))
-                        .font(.caption)
+                    Text("\(Int(contribution.rawScore * 100))%")
+                        .font(.subheadline.weight(.semibold).monospacedDigit())
                         .foregroundStyle(scoreColor(for: contribution.rawScore))
                 } else {
-                    Text("Not available")
-                        .font(.caption)
+                    Text("N/A")
+                        .font(.subheadline)
                         .foregroundStyle(AIQColors.tertiaryText)
                 }
-            }
 
-            Spacer()
-
-            if contribution.isAvailable {
-                Text("\(Int(contribution.rawScore * 100))%")
-                    .font(.subheadline.weight(.semibold).monospacedDigit())
-                    .foregroundStyle(scoreColor(for: contribution.rawScore))
-            } else {
-                Text("N/A")
-                    .font(.subheadline)
+                Text("(\(Int(weight * 100))%)")
+                    .font(.caption)
                     .foregroundStyle(AIQColors.tertiaryText)
             }
 
-            Text("(\(Int(weight * 100))%)")
-                .font(.caption)
-                .foregroundStyle(AIQColors.tertiaryText)
+            // Horizontal progress bar
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    // Background track
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(AIQColors.subtleBorder)
+
+                    if contribution.isAvailable {
+                        // Score fill
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(scoreColor(for: contribution.rawScore))
+                            .frame(width: geometry.size.width * contribution.rawScore)
+                    }
+                }
+            }
+            .frame(height: 6)
+
+            // Classification label
+            if contribution.isAvailable {
+                Text(classificationLabel(for: contribution.rawScore))
+                    .font(.caption)
+                    .foregroundStyle(scoreColor(for: contribution.rawScore))
+            } else {
+                Text("Not available")
+                    .font(.caption)
+                    .foregroundStyle(AIQColors.tertiaryText)
+            }
         }
         .padding(.vertical, AIQSpacing.xs)
     }

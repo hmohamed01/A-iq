@@ -90,10 +90,12 @@ struct AIQPrimaryButton: ButtonStyle {
 struct AIQSecondaryButton: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.body.weight(.medium))
+            .font(.callout.weight(.medium))
+            .lineLimit(1)
+            .fixedSize(horizontal: true, vertical: false)
             .foregroundStyle(AIQColors.accent)
-            .padding(.horizontal, AIQSpacing.lg)
-            .padding(.vertical, AIQSpacing.sm + 2)
+            .padding(.horizontal, AIQSpacing.md)
+            .padding(.vertical, AIQSpacing.sm)
             .background(AIQColors.accent.opacity(0.1))
             .clipShape(RoundedRectangle(cornerRadius: AIQRadius.sm, style: .continuous))
             .opacity(configuration.isPressed ? 0.7 : 1)
