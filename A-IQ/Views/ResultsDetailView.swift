@@ -56,15 +56,6 @@ struct ResultsDetailView: View {
 
     private var headerSection: some View {
         HStack(alignment: .top, spacing: AIQSpacing.md) {
-            // Thumbnail
-            if let thumbnail = result.imageThumbnail {
-                Image(thumbnail, scale: 1.0, label: Text("Image"))
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 100, height: 100)
-                    .clipShape(RoundedRectangle(cornerRadius: AIQRadius.md, style: .continuous))
-            }
-
             VStack(alignment: .leading, spacing: AIQSpacing.sm) {
                 // Filename
                 Text(result.imageSource.displayName)
@@ -87,6 +78,16 @@ struct ResultsDetailView: View {
             }
 
             Spacer()
+
+            // Large thumbnail preview
+            if let thumbnail = result.imageThumbnail {
+                Image(thumbnail, scale: 1.0, label: Text("Image"))
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(maxWidth: 180, maxHeight: 140)
+                    .clipShape(RoundedRectangle(cornerRadius: AIQRadius.md, style: .continuous))
+                    .shadow(color: AIQColors.dropShadow, radius: 4, x: 0, y: 2)
+            }
         }
     }
 
