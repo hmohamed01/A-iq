@@ -40,6 +40,7 @@
 		AAA00094 /* ELAOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10094; };
 		AAA00095 /* MetadataPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10095; };
 		AAA00096 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10096; };
+		AAA00097 /* AIQDesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10097; };
 		AAA00100 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AAA10100; };
 		AAA00102 /* AIDetector.mlmodelc in Resources */ = {isa = PBXBuildFile; fileRef = AAA10102; };
 		AAA00103 /* c2patool in Resources */ = {isa = PBXBuildFile; fileRef = AAA10103; };
@@ -93,6 +94,7 @@
 		AAA10094 /* ELAOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ELAOverlayView.swift; sourceTree = "<group>"; };
 		AAA10095 /* MetadataPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetadataPanel.swift; sourceTree = "<group>"; };
 		AAA10096 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
+		AAA10097 /* AIQDesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIQDesignSystem.swift; sourceTree = "<group>"; };
 		AAA10100 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AAA10102 /* AIDetector.mlmodelc */ = {isa = PBXFileReference; lastKnownFileType = folder; path = AIDetector.mlmodelc; sourceTree = "<group>"; };
 		AAA10103 /* c2patool */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = c2patool; sourceTree = "<group>"; };
@@ -232,6 +234,7 @@
 		AAA4000B /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				AAA10097 /* AIQDesignSystem.swift */,
 				AAA10080 /* AnalysisView.swift */,
 				AAA10081 /* ResultsDetailView.swift */,
 				AAA10082 /* HistoryView.swift */,
@@ -410,6 +413,7 @@
 				AAA00094 /* ELAOverlayView.swift in Sources */,
 				AAA00095 /* MetadataPanel.swift in Sources */,
 				AAA00096 /* WelcomeView.swift in Sources */,
+				AAA00097 /* AIQDesignSystem.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

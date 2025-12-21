@@ -3,7 +3,7 @@ import UniformTypeIdentifiers
 
 // MARK: - Analysis View
 
-/// Main analysis interface with drop zone
+/// Main analysis interface with drop zone (A-IQ design system)
 /// Implements: Req 1.1, 7.1, 7.2, 7.3
 struct AnalysisView: View {
     @EnvironmentObject var appState: AppState
@@ -13,12 +13,13 @@ struct AnalysisView: View {
         HSplitView {
             // Left panel: Drop zone and controls
             dropZonePanel
-                .frame(minWidth: 300, idealWidth: 400)
+                .frame(minWidth: 320, idealWidth: 400)
 
             // Right panel: Results
             resultsPanel
                 .frame(minWidth: 400)
         }
+        .background(AIQColors.paperWhite)
         .toolbar {
             ToolbarItem(placement: .secondaryAction) {
                 Button(action: openFile) {
@@ -45,7 +46,7 @@ struct AnalysisView: View {
     // MARK: Drop Zone Panel
 
     private var dropZonePanel: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: AIQSpacing.lg) {
             if appState.isAnalyzing {
                 analysisProgressView
             } else {
@@ -59,52 +60,71 @@ struct AnalysisView: View {
             // Status message
             Text(appState.statusMessage)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(AIQColors.tertiaryText)
         }
-        .padding()
+        .padding(AIQSpacing.lg)
+        .background(AIQColors.paperWhite)
     }
 
     private var analysisProgressView: some View {
-        VStack(spacing: 16) {
-            ProgressView(value: appState.analysisProgress)
-                .progressViewStyle(.linear)
+        VStack(spacing: AIQSpacing.lg) {
+            // Circular progress indicator (Circular)
+            ZStack {
+                Circle()
+                    .stroke(AIQColors.subtleBorder, lineWidth: 6)
+                    .frame(width: 80, height: 80)
 
-            Text("Analyzing... \(Int(appState.analysisProgress * 100))%")
-                .foregroundStyle(.secondary)
+                Circle()
+                    .trim(from: 0, to: appState.analysisProgress)
+                    .stroke(
+                        AIQColors.accent,
+                        style: StrokeStyle(lineWidth: 6, lineCap: .round)
+                    )
+                    .frame(width: 80, height: 80)
+                    .rotationEffect(.degrees(-90))
+                    .animation(.easeOut(duration: 0.3), value: appState.analysisProgress)
+
+                Text("\(Int(appState.analysisProgress * 100))%")
+                    .font(.title3.weight(.medium).monospacedDigit())
+                    .foregroundStyle(AIQColors.primaryText)
+            }
+
+            Text("Analyzing...")
+                .font(.headline.weight(.medium))
+                .foregroundStyle(AIQColors.primaryText)
 
             if !appState.batchQueue.isEmpty {
                 Text("\(appState.batchResults.count) of \(appState.batchQueue.count) complete")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
+                    .font(.subheadline)
+                    .foregroundStyle(AIQColors.secondaryText)
             }
 
             Button("Cancel") {
                 appState.cancelAnalysis()
             }
-            .buttonStyle(.bordered)
+            .buttonStyle(AIQSecondaryButton())
         }
-        .padding()
+        .padding(AIQSpacing.xl)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(nsColor: .controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .aiqCard()
     }
 
     private var controlButtons: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: AIQSpacing.md) {
             Button(action: openFile) {
                 Label("Open File", systemImage: "doc")
             }
-            .buttonStyle(.bordered)
+            .buttonStyle(AIQSecondaryButton())
 
             Button(action: openFolder) {
                 Label("Open Folder", systemImage: "folder")
             }
-            .buttonStyle(.bordered)
+            .buttonStyle(AIQSecondaryButton())
 
             Button(action: pasteFromClipboard) {
                 Label("Paste", systemImage: "doc.on.clipboard")
             }
-            .buttonStyle(.bordered)
+            .buttonStyle(AIQSecondaryButton())
             .keyboardShortcut("v", modifiers: .command)
         }
     }
@@ -121,45 +141,55 @@ struct AnalysisView: View {
                 emptyResultsView
             }
         }
+        .background(AIQColors.paperWhite)
     }
 
     private var batchResultsList: some View {
         NavigationSplitView {
             List(appState.batchResults, selection: $selectedResultID) { result in
-                HStack {
+                HStack(spacing: AIQSpacing.md) {
                     // Thumbnail
                     if let thumbnail = result.imageThumbnail {
                         Image(thumbnail, scale: 1.0, label: Text("Thumbnail"))
                             .resizable()
                             .aspectRatio(contentMode: .fill)
-                            .frame(width: 40, height: 40)
-                            .clipShape(RoundedRectangle(cornerRadius: 4))
+                            .frame(width: 44, height: 44)
+                            .clipShape(RoundedRectangle(cornerRadius: AIQRadius.sm, style: .continuous))
                     } else {
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(Color.secondary.opacity(0.2))
-                            .frame(width: 40, height: 40)
+                        RoundedRectangle(cornerRadius: AIQRadius.sm, style: .continuous)
+                            .fill(AIQColors.subtleBorder)
+                            .frame(width: 44, height: 44)
                     }
 
-                    VStack(alignment: .leading) {
+                    VStack(alignment: .leading, spacing: 2) {
                         Text(result.imageSource.displayName)
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(AIQColors.primaryText)
                             .lineLimit(1)
 
-                        Text(result.classification.shortName)
-                            .font(.caption)
-                            .foregroundStyle(classificationColor(result.classification))
+                        HStack(spacing: 4) {
+                            Circle()
+                                .fill(classificationColor(result.classification))
+                                .frame(width: 8, height: 8)
+
+                            Text(result.classification.shortName)
+                                .font(.caption)
+                                .foregroundStyle(classificationColor(result.classification))
+                        }
                     }
 
                     Spacer()
 
                     Text("\(result.scorePercentage)%")
-                        .font(.caption)
-                        .monospacedDigit()
+                        .font(.subheadline.weight(.medium).monospacedDigit())
+                        .foregroundStyle(AIQColors.secondaryText)
                 }
+                .padding(.vertical, 4)
                 .tag(result.id)
             }
+            .listStyle(.sidebar)
             .navigationTitle("Batch Results (\(appState.batchResults.count))")
             .onAppear {
-                // Select first result by default
                 if selectedResultID == nil, let first = appState.batchResults.first {
                     selectedResultID = first.id
                 }
@@ -173,23 +203,32 @@ struct AnalysisView: View {
                 ResultsDetailView(result: firstResult)
             } else {
                 Text("Select a result")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AIQColors.secondaryText)
             }
         }
     }
 
     private var emptyResultsView: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "photo.on.rectangle.angled")
-                .font(.system(size: 64))
-                .foregroundStyle(.secondary)
+        VStack(spacing: AIQSpacing.lg) {
+            ZStack {
+                Circle()
+                    .fill(AIQColors.accent.opacity(0.08))
+                    .frame(width: 100, height: 100)
 
-            Text("No Analysis Results")
-                .font(.title2)
-                .foregroundStyle(.secondary)
+                Image(systemName: "photo.on.rectangle.angled")
+                    .font(.system(size: 44, weight: .light))
+                    .foregroundStyle(AIQColors.accent.opacity(0.6))
+            }
 
-            Text("Drop an image or use the buttons to analyze")
-                .foregroundStyle(.tertiary)
+            VStack(spacing: AIQSpacing.sm) {
+                Text("No Analysis Results")
+                    .font(.title3.weight(.medium))
+                    .foregroundStyle(AIQColors.secondaryText)
+
+                Text("Drop an image or use the buttons to analyze")
+                    .font(.subheadline)
+                    .foregroundStyle(AIQColors.tertiaryText)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -220,9 +259,9 @@ struct AnalysisView: View {
 
     private func classificationColor(_ classification: OverallClassification) -> Color {
         switch classification {
-        case .likelyAuthentic: return .green
-        case .uncertain: return .yellow
-        case .likelyAIGenerated, .confirmedAIGenerated: return .red
+        case .likelyAuthentic: return AIQColors.authentic
+        case .uncertain: return AIQColors.uncertain
+        case .likelyAIGenerated, .confirmedAIGenerated: return AIQColors.aiGenerated
         }
     }
 }

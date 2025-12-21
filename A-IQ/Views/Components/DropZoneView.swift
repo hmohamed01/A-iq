@@ -3,7 +3,7 @@ import UniformTypeIdentifiers
 
 // MARK: - Drop Zone View
 
-/// Drag-and-drop target area for images
+/// Drag-and-drop target area for images (A-IQ design system)
 /// Implements: Req 1.1
 struct DropZoneView: View {
     let onDrop: ([URL]) -> Void
@@ -23,76 +23,68 @@ struct DropZoneView: View {
 
     var body: some View {
         ZStack {
-            // Background
-            RoundedRectangle(cornerRadius: 16)
-                .fill(backgroundColor)
-                .strokeBorder(
-                    borderColor,
-                    style: StrokeStyle(lineWidth: 3, dash: [12, 6])
+            // Clean card background with subtle shadow
+            RoundedRectangle(cornerRadius: AIQRadius.xl, style: .continuous)
+                .fill(AIQColors.cardBackground)
+                .shadow(
+                    color: AIQColors.dropShadow,
+                    radius: isTargeted ? 16 : 8,
+                    x: 0,
+                    y: isTargeted ? 4 : 2
                 )
 
+            // Subtle inner border
+            RoundedRectangle(cornerRadius: AIQRadius.xl - 2, style: .continuous)
+                .strokeBorder(
+                    isTargeted ? AIQColors.accent.opacity(0.5) : AIQColors.subtleBorder,
+                    lineWidth: isTargeted ? 2 : 1
+                )
+                .padding(4)
+
             // Content
-            VStack(spacing: 16) {
-                Image(systemName: isTargeted ? "arrow.down.doc.fill" : "photo.on.rectangle.angled")
-                    .font(.system(size: 56))
-                    .foregroundStyle(iconColor)
-                    .symbolEffect(.bounce, value: isTargeted)
+            VStack(spacing: AIQSpacing.lg) {
+                // Icon with background circle
+                ZStack {
+                    Circle()
+                        .fill(AIQColors.accent.opacity(isTargeted ? 0.15 : 0.08))
+                        .frame(width: 88, height: 88)
 
-                Text(isTargeted ? "Drop to Analyze" : "Drop Image Here")
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(isTargeted ? .primary : .secondary)
+                    Image(systemName: isTargeted ? "arrow.down.circle.fill" : "photo.badge.plus")
+                        .font(.system(size: 40, weight: .light))
+                        .foregroundStyle(AIQColors.accent)
+                        .symbolEffect(.bounce, value: isTargeted)
+                }
 
-                Text("or use the buttons below")
-                    .font(.subheadline)
-                    .foregroundStyle(.tertiary)
+                VStack(spacing: AIQSpacing.sm) {
+                    Text(isTargeted ? "Drop to Analyze" : "Drop Image Here")
+                        .font(.title3.weight(.medium))
+                        .foregroundStyle(AIQColors.primaryText)
 
-                // Supported formats
-                HStack(spacing: 8) {
-                    ForEach(["JPEG", "PNG", "HEIC", "WebP", "TIFF"], id: \.self) { format in
+                    Text("or click to browse")
+                        .font(.subheadline)
+                        .foregroundStyle(AIQColors.tertiaryText)
+                }
+
+                // Supported formats (pill-shaped tags)
+                HStack(spacing: AIQSpacing.sm) {
+                    ForEach(["JPEG", "PNG", "HEIC", "WebP"], id: \.self) { format in
                         Text(format)
-                            .font(.caption2)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.secondary.opacity(0.2))
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(AIQColors.secondaryText)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(Color(white: 0.95))
                             .clipShape(Capsule())
                     }
                 }
-                .foregroundStyle(.secondary)
             }
-            .padding()
+            .padding(AIQSpacing.xl)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onDrop(of: supportedTypes, isTargeted: $isTargeted) { providers in
             handleDrop(providers)
         }
-        .animation(.easeInOut(duration: 0.2), value: isTargeted)
-    }
-
-    // MARK: Styling
-
-    private var backgroundColor: Color {
-        if isTargeted {
-            return Color.accentColor.opacity(0.1)
-        } else {
-            return Color(nsColor: .controlBackgroundColor)
-        }
-    }
-
-    private var borderColor: Color {
-        if isTargeted {
-            return Color.accentColor
-        } else {
-            return Color.secondary.opacity(0.3)
-        }
-    }
-
-    private var iconColor: Color {
-        if isTargeted {
-            return Color.accentColor
-        } else {
-            return Color.secondary
-        }
+        .animation(.easeOut(duration: 0.2), value: isTargeted)
     }
 
     // MARK: Drop Handling
@@ -142,6 +134,7 @@ struct DropZoneView: View {
     DropZoneView { urls in
         print("Dropped: \(urls)")
     }
-    .frame(width: 400, height: 300)
-    .padding()
+    .frame(width: 400, height: 350)
+    .padding(AIQSpacing.xl)
+    .background(AIQColors.paperWhite)
 }

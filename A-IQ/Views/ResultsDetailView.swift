@@ -2,7 +2,7 @@ import SwiftUI
 
 // MARK: - Results Detail View
 
-/// Full results display with signal breakdown
+/// Full results display with signal breakdown (A-IQ design system)
 /// Implements: Req 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7
 struct ResultsDetailView: View {
     let result: AggregatedResult
@@ -12,63 +12,64 @@ struct ResultsDetailView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: AIQSpacing.lg) {
                 // Header with classification
                 headerSection
-
-                Divider()
+                    .aiqCard()
 
                 // Confidence gauge
                 confidenceSection
-
-                Divider()
+                    .aiqCard()
 
                 // Signal breakdown
                 signalBreakdownSection
+                    .aiqCard()
 
                 // C2PA Provenance (if available)
                 if result.provenanceResult?.credentialStatus != .notPresent {
-                    Divider()
                     provenanceSection
+                        .aiqCard()
                 }
 
                 // Metadata (if available)
                 if result.metadataResult?.hasExifData == true {
-                    Divider()
                     metadataSection
+                        .aiqCard()
                 }
 
                 // ELA Visualization (if available)
                 if result.elaImage != nil {
-                    Divider()
                     elaSection
+                        .aiqCard()
                 }
 
                 // Evidence summary
-                Divider()
                 evidenceSection
+                    .aiqCard()
             }
-            .padding()
+            .padding(AIQSpacing.lg)
         }
+        .background(AIQColors.paperWhite)
     }
 
     // MARK: Header Section
 
     private var headerSection: some View {
-        HStack(alignment: .top, spacing: 16) {
+        HStack(alignment: .top, spacing: AIQSpacing.md) {
             // Thumbnail
             if let thumbnail = result.imageThumbnail {
                 Image(thumbnail, scale: 1.0, label: Text("Image"))
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(width: 120, height: 120)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .frame(width: 100, height: 100)
+                    .clipShape(RoundedRectangle(cornerRadius: AIQRadius.md, style: .continuous))
             }
 
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: AIQSpacing.sm) {
                 // Filename
                 Text(result.imageSource.displayName)
-                    .font(.headline)
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(AIQColors.primaryText)
 
                 // Classification badge
                 classificationBadge
@@ -77,12 +78,12 @@ struct ResultsDetailView: View {
                 if let size = result.imageSize {
                     Text("\(Int(size.width)) × \(Int(size.height))")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(AIQColors.tertiaryText)
                 }
 
                 Text("Analyzed \(result.timestamp.formatted())")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AIQColors.tertiaryText)
             }
 
             Spacer()
@@ -90,18 +91,18 @@ struct ResultsDetailView: View {
     }
 
     private var classificationBadge: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 8) {
             Circle()
                 .fill(classificationColor)
                 .frame(width: 12, height: 12)
 
             Text(result.classification.displayName)
-                .font(.title3)
-                .fontWeight(.semibold)
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(classificationColor)
 
             if result.isDefinitive {
                 Image(systemName: "checkmark.seal.fill")
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(AIQColors.accent)
                     .help("Verified by C2PA credentials")
             }
         }
@@ -109,25 +110,26 @@ struct ResultsDetailView: View {
 
     private var classificationColor: Color {
         switch result.classification {
-        case .likelyAuthentic: return .green
-        case .uncertain: return .yellow
-        case .likelyAIGenerated, .confirmedAIGenerated: return .red
+        case .likelyAuthentic: return AIQColors.authentic
+        case .uncertain: return AIQColors.uncertain
+        case .likelyAIGenerated, .confirmedAIGenerated: return AIQColors.aiGenerated
         }
     }
 
     // MARK: Confidence Section
 
     private var confidenceSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: AIQSpacing.md) {
             Text("Confidence Score")
-                .font(.headline)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(AIQColors.secondaryText)
 
             ConfidenceGaugeView(score: result.overallScore)
-                .frame(height: 60)
+                .frame(height: 50)
 
             Text("\(result.scorePercentage)% probability of AI generation")
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(AIQColors.tertiaryText)
         }
     }
 
@@ -141,10 +143,11 @@ struct ResultsDetailView: View {
             )
         ) {
             SignalBreakdownView(breakdown: result.signalBreakdown)
-                .padding(.top, 8)
+                .padding(.top, AIQSpacing.sm)
         } label: {
             Label("Signal Breakdown", systemImage: "chart.bar.fill")
-                .font(.headline)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(AIQColors.primaryText)
         }
     }
 
@@ -159,11 +162,12 @@ struct ResultsDetailView: View {
         ) {
             if let provenance = result.provenanceResult {
                 ProvenanceChainView(result: provenance)
-                    .padding(.top, 8)
+                    .padding(.top, AIQSpacing.sm)
             }
         } label: {
             Label("Content Credentials (C2PA)", systemImage: "checkmark.shield.fill")
-                .font(.headline)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(AIQColors.primaryText)
         }
     }
 
@@ -178,11 +182,12 @@ struct ResultsDetailView: View {
         ) {
             if let metadata = result.metadataResult {
                 MetadataPanel(result: metadata)
-                    .padding(.top, 8)
+                    .padding(.top, AIQSpacing.sm)
             }
         } label: {
             Label("Image Metadata", systemImage: "info.circle.fill")
-                .font(.headline)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(AIQColors.primaryText)
         }
     }
 
@@ -200,46 +205,54 @@ struct ResultsDetailView: View {
                 elaImage: result.elaImage,
                 showOverlay: $showELAOverlay
             )
-            .padding(.top, 8)
+            .padding(.top, AIQSpacing.sm)
         } label: {
             Label("Error Level Analysis", systemImage: "waveform.path.ecg")
-                .font(.headline)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(AIQColors.primaryText)
         }
     }
 
     // MARK: Evidence Section
 
     private var evidenceSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: AIQSpacing.md) {
             Text("Evidence Summary")
-                .font(.headline)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(AIQColors.secondaryText)
 
             if !result.aiIndicators.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: AIQSpacing.sm) {
                     Text("AI Indicators")
-                        .font(.subheadline)
-                        .foregroundStyle(.red)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(AIQColors.aiGenerated)
 
                     ForEach(result.aiIndicators) { evidence in
                         Label(evidence.description, systemImage: "exclamationmark.triangle.fill")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(AIQColors.secondaryText)
                     }
                 }
             }
 
             if !result.authenticityIndicators.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: AIQSpacing.sm) {
                     Text("Authenticity Indicators")
-                        .font(.subheadline)
-                        .foregroundStyle(.green)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(AIQColors.authentic)
 
                     ForEach(result.authenticityIndicators) { evidence in
                         Label(evidence.description, systemImage: "checkmark.circle.fill")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(AIQColors.secondaryText)
                     }
                 }
+            }
+
+            if result.aiIndicators.isEmpty && result.authenticityIndicators.isEmpty {
+                Text("No strong indicators detected")
+                    .font(.caption)
+                    .foregroundStyle(AIQColors.tertiaryText)
             }
         }
     }
@@ -248,7 +261,6 @@ struct ResultsDetailView: View {
 // MARK: - Preview
 
 #Preview {
-    // Create a mock result for preview
     let breakdown = SignalBreakdown(
         mlContribution: SignalContribution(rawScore: 0.75, weight: 0.4, isAvailable: true, confidence: .high),
         provenanceContribution: SignalContribution(rawScore: 0.5, weight: 0.3, isAvailable: false, confidence: .unavailable),

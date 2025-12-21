@@ -2,7 +2,7 @@ import SwiftUI
 
 // MARK: - Confidence Gauge View
 
-/// Visual confidence indicator with color gradient
+/// Smooth gradient confidence gauge with smooth gradient
 /// Implements: Req 7.2
 struct ConfidenceGaugeView: View {
     let score: Double
@@ -13,13 +13,13 @@ struct ConfidenceGaugeView: View {
         GeometryReader { geometry in
             ZStack(alignment: .leading) {
                 // Background track
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.secondary.opacity(0.2))
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .fill(AIQColors.subtleBorder)
 
                 // Gradient fill
-                RoundedRectangle(cornerRadius: 8)
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
                     .fill(gradientFill)
-                    .frame(width: geometry.size.width * animatedScore)
+                    .frame(width: max(0, geometry.size.width * animatedScore))
 
                 // Threshold markers
                 thresholdMarkers(width: geometry.size.width)
@@ -45,10 +45,9 @@ struct ConfidenceGaugeView: View {
     private var gradientFill: LinearGradient {
         LinearGradient(
             colors: [
-                Color.green,
-                Color.yellow,
-                Color.orange,
-                Color.red,
+                AIQColors.authentic,
+                AIQColors.uncertain,
+                AIQColors.aiGenerated,
             ],
             startPoint: .leading,
             endPoint: .trailing
@@ -61,13 +60,13 @@ struct ConfidenceGaugeView: View {
         ZStack {
             // 30% threshold
             Rectangle()
-                .fill(Color.primary.opacity(0.3))
+                .fill(Color.white.opacity(0.5))
                 .frame(width: 2)
                 .offset(x: width * 0.30 - 1)
 
             // 70% threshold
             Rectangle()
-                .fill(Color.primary.opacity(0.3))
+                .fill(Color.white.opacity(0.5))
                 .frame(width: 2)
                 .offset(x: width * 0.70 - 1)
         }
@@ -79,18 +78,17 @@ struct ConfidenceGaugeView: View {
         VStack(spacing: 2) {
             // Percentage label
             Text("\(Int(animatedScore * 100))%")
-                .font(.caption)
-                .fontWeight(.bold)
-                .foregroundStyle(.primary)
-                .padding(.horizontal, 6)
-                .padding(.vertical, 2)
-                .background(Color(nsColor: .controlBackgroundColor))
+                .font(.caption.weight(.semibold).monospacedDigit())
+                .foregroundStyle(AIQColors.primaryText)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .background(AIQColors.cardBackground)
                 .clipShape(Capsule())
-                .shadow(radius: 2)
+                .shadow(color: AIQColors.dropShadow, radius: 4, x: 0, y: 2)
 
             // Pointer
             Image(systemName: "arrowtriangle.down.fill")
-                .font(.caption2)
+                .font(.system(size: 8))
                 .foregroundStyle(scoreColor)
         }
         .offset(x: width * animatedScore - 20)
@@ -98,11 +96,11 @@ struct ConfidenceGaugeView: View {
 
     private var scoreColor: Color {
         if score < 0.30 {
-            return .green
+            return AIQColors.authentic
         } else if score < 0.70 {
-            return .yellow
+            return AIQColors.uncertain
         } else {
-            return .red
+            return AIQColors.aiGenerated
         }
     }
 }
@@ -113,24 +111,32 @@ struct MiniConfidenceGauge: View {
     let score: Double
 
     var body: some View {
-        HStack(spacing: 4) {
-            Circle()
-                .fill(scoreColor)
-                .frame(width: 8, height: 8)
+        HStack(spacing: 6) {
+            // Small circular indicator
+            ZStack {
+                Circle()
+                    .stroke(AIQColors.subtleBorder, lineWidth: 2)
+
+                Circle()
+                    .trim(from: 0, to: score)
+                    .stroke(scoreColor, style: StrokeStyle(lineWidth: 2, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+            }
+            .frame(width: 16, height: 16)
 
             Text("\(Int(score * 100))%")
-                .font(.caption)
-                .monospacedDigit()
+                .font(.caption.weight(.medium).monospacedDigit())
+                .foregroundStyle(scoreColor)
         }
     }
 
     private var scoreColor: Color {
         if score < 0.30 {
-            return .green
+            return AIQColors.authentic
         } else if score < 0.70 {
-            return .yellow
+            return AIQColors.uncertain
         } else {
-            return .red
+            return AIQColors.aiGenerated
         }
     }
 }
@@ -138,7 +144,7 @@ struct MiniConfidenceGauge: View {
 // MARK: - Preview
 
 #Preview("Full Gauge") {
-    VStack(spacing: 20) {
+    VStack(spacing: AIQSpacing.lg) {
         ConfidenceGaugeView(score: 0.15)
             .frame(height: 40)
 
@@ -148,15 +154,18 @@ struct MiniConfidenceGauge: View {
         ConfidenceGaugeView(score: 0.85)
             .frame(height: 40)
     }
-    .padding()
+    .aiqCard()
     .frame(width: 400)
+    .padding()
+    .background(AIQColors.paperWhite)
 }
 
 #Preview("Mini Gauge") {
-    HStack(spacing: 20) {
+    HStack(spacing: AIQSpacing.lg) {
         MiniConfidenceGauge(score: 0.15)
         MiniConfidenceGauge(score: 0.50)
         MiniConfidenceGauge(score: 0.85)
     }
     .padding()
+    .background(AIQColors.paperWhite)
 }

@@ -2,13 +2,13 @@ import SwiftUI
 
 // MARK: - Signal Breakdown View
 
-/// Horizontal bar chart showing signal contributions
+/// Circular signal breakdown with circular progress indicators
 /// Implements: Req 7.3
 struct SignalBreakdownView: View {
     let breakdown: SignalBreakdown
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: AIQSpacing.md) {
             ForEach(breakdown.allContributions, id: \.name) { item in
                 signalRow(
                     name: item.name,
@@ -16,83 +16,72 @@ struct SignalBreakdownView: View {
                     weight: item.weight
                 )
             }
-
-            Divider()
-
-            // Legend
-            legendView
         }
     }
 
     // MARK: Signal Row
 
     private func signalRow(name: String, contribution: SignalContribution, weight: Double) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                Text(name)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-
-                Spacer()
+        HStack(spacing: AIQSpacing.md) {
+            // Circular progress indicator (Circular "pie")
+            ZStack {
+                Circle()
+                    .stroke(AIQColors.subtleBorder, lineWidth: 3)
 
                 if contribution.isAvailable {
-                    Text("\(Int(contribution.rawScore * 100))%")
-                        .font(.subheadline)
-                        .monospacedDigit()
-                        .foregroundStyle(.secondary)
-
-                    Text("(\(Int(weight * 100))% weight)")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                } else {
-                    Text("Unavailable")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
+                    Circle()
+                        .trim(from: 0, to: contribution.rawScore)
+                        .stroke(
+                            scoreColor(for: contribution.rawScore),
+                            style: StrokeStyle(lineWidth: 3, lineCap: .round)
+                        )
+                        .rotationEffect(.degrees(-90))
                 }
             }
+            .frame(width: 28, height: 28)
 
-            // Progress bar
-            GeometryReader { geometry in
-                ZStack(alignment: .leading) {
-                    // Background
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.secondary.opacity(0.2))
+            VStack(alignment: .leading, spacing: 2) {
+                Text(name)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(contribution.isAvailable ? AIQColors.primaryText : AIQColors.tertiaryText)
 
-                    if contribution.isAvailable {
-                        // Score fill
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(barColor(for: contribution.rawScore))
-                            .frame(width: geometry.size.width * contribution.rawScore)
-
-                        // Weight indicator
-                        Rectangle()
-                            .fill(Color.primary.opacity(0.5))
-                            .frame(width: 2)
-                            .offset(x: geometry.size.width * weight - 1)
-                    }
-                }
-            }
-            .frame(height: 8)
-
-            // Classification badge (matches legend)
-            if contribution.isAvailable {
-                HStack(spacing: 4) {
-                    classificationIcon(for: contribution.rawScore)
+                if contribution.isAvailable {
                     Text(classificationLabel(for: contribution.rawScore))
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .font(.caption)
+                        .foregroundStyle(scoreColor(for: contribution.rawScore))
+                } else {
+                    Text("Not available")
+                        .font(.caption)
+                        .foregroundStyle(AIQColors.tertiaryText)
                 }
             }
+
+            Spacer()
+
+            if contribution.isAvailable {
+                Text("\(Int(contribution.rawScore * 100))%")
+                    .font(.subheadline.weight(.semibold).monospacedDigit())
+                    .foregroundStyle(scoreColor(for: contribution.rawScore))
+            } else {
+                Text("N/A")
+                    .font(.subheadline)
+                    .foregroundStyle(AIQColors.tertiaryText)
+            }
+
+            Text("(\(Int(weight * 100))%)")
+                .font(.caption)
+                .foregroundStyle(AIQColors.tertiaryText)
         }
+        .padding(.vertical, AIQSpacing.xs)
     }
 
-    private func barColor(for score: Double) -> Color {
+    private func scoreColor(for score: Double) -> Color {
         if score < 0.30 {
-            return .green
+            return AIQColors.authentic
         } else if score < 0.70 {
-            return .yellow
+            return AIQColors.uncertain
         } else {
-            return .red
+            return AIQColors.aiGenerated
         }
     }
 
@@ -102,44 +91,7 @@ struct SignalBreakdownView: View {
         } else if score < 0.70 {
             return "Uncertain"
         } else {
-            return "AI"
-        }
-    }
-
-    private func classificationIcon(for score: Double) -> some View {
-        Group {
-            if score < 0.30 {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(.green)
-            } else if score < 0.70 {
-                Image(systemName: "questionmark.circle.fill")
-                    .foregroundStyle(.yellow)
-            } else {
-                Image(systemName: "exclamationmark.circle.fill")
-                    .foregroundStyle(.red)
-            }
-        }
-        .font(.caption2)
-    }
-
-    // MARK: Legend
-
-    private var legendView: some View {
-        HStack(spacing: 16) {
-            legendItem(color: .green, label: "< 30% (Authentic)")
-            legendItem(color: .yellow, label: "30-70% (Uncertain)")
-            legendItem(color: .red, label: "> 70% (AI)")
-        }
-        .font(.caption2)
-        .foregroundStyle(.secondary)
-    }
-
-    private func legendItem(color: Color, label: String) -> some View {
-        HStack(spacing: 4) {
-            Circle()
-                .fill(color)
-                .frame(width: 8, height: 8)
-            Text(label)
+            return "AI-Generated"
         }
     }
 }
@@ -155,6 +107,8 @@ struct SignalBreakdownView: View {
     )
 
     return SignalBreakdownView(breakdown: breakdown)
-        .padding()
+        .aiqCard()
         .frame(width: 400)
+        .padding()
+        .background(AIQColors.paperWhite)
 }
