@@ -8,14 +8,13 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject var appState: AppState
     @Environment(\.modelContext) private var modelContext
-    @State private var selectedTab: AppState.Tab = .analyze
 
     /// Whether to show welcome dialog on launch (user preference)
     @AppStorage("showWelcomeOnLaunch") private var showWelcomeOnLaunch = true
     @State private var showWelcome = false
 
     var body: some View {
-        TabView(selection: $selectedTab) {
+        TabView(selection: $appState.selectedTab) {
             AnalysisView()
                 .tabItem {
                     Label(AppState.Tab.analyze.rawValue, systemImage: AppState.Tab.analyze.systemImage)

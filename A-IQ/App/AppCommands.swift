@@ -44,27 +44,20 @@ struct AppCommands: Commands {
             Divider()
 
             Button("Show Analysis") {
-                // Navigate to analysis tab
+                appState.selectedTab = .analyze
             }
             .keyboardShortcut("1", modifiers: .command)
 
             Button("Show History") {
-                // Navigate to history tab
+                appState.selectedTab = .history
             }
             .keyboardShortcut("2", modifiers: .command)
         }
 
-        // Help menu addition
+        // Help menu - About item
         CommandGroup(replacing: .help) {
-            Button("A-IQ Help") {
-                openHelp()
-            }
-            .keyboardShortcut("?", modifiers: .command)
-
-            Divider()
-
-            Button("Report an Issue...") {
-                reportIssue()
+            Button("About A-IQ") {
+                showAboutWindow()
             }
         }
     }
@@ -92,16 +85,8 @@ struct AppCommands: Commands {
         // TODO: Implement with ReportGenerator
     }
 
-    private func openHelp() {
-        if let url = URL(string: "https://github.com/yourusername/A-IQ#readme") {
-            NSWorkspace.shared.open(url)
-        }
-    }
-
-    private func reportIssue() {
-        if let url = URL(string: "https://github.com/yourusername/A-IQ/issues/new") {
-            NSWorkspace.shared.open(url)
-        }
+    private func showAboutWindow() {
+        NSApplication.shared.orderFrontStandardAboutPanel(nil)
     }
 }
 

@@ -36,6 +36,9 @@ final class AppState: ObservableObject {
     /// Current status message
     @Published var statusMessage: String = "Ready"
 
+    /// Currently selected tab
+    @Published var selectedTab: Tab = .analyze
+
     /// Current analysis task (for cancellation)
     private var currentAnalysisTask: Task<Void, Never>?
 
