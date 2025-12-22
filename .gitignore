@@ -102,6 +102,7 @@ scripts/
 # Source assets (not needed for build)
 # ===================
 AppIcon.svg
+gumroad-icon*.png
 
 # ===================
 # Large binary resources (should be downloaded separately or via LFS)
