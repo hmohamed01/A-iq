@@ -2,9 +2,9 @@
 import AppKit
 import CoreGraphics
 
-// DMG background dimensions (standard size for nice layout)
-let width: CGFloat = 660
-let height: CGFloat = 400
+// DMG background dimensions (matches window bounds)
+let width: CGFloat = 440
+let height: CGFloat = 300
 
 // Create bitmap context
 guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
@@ -21,7 +21,7 @@ guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
     exit(1)
 }
 
-// Fill background with gradient
+// Fill background with dark gradient (consistent throughout)
 let gradientColors = [
     NSColor(red: 0.12, green: 0.12, blue: 0.14, alpha: 1.0).cgColor,
     NSColor(red: 0.08, green: 0.08, blue: 0.10, alpha: 1.0).cgColor
@@ -35,41 +35,57 @@ context.setLineWidth(3)
 context.setLineCap(.round)
 context.setLineJoin(.round)
 
-// Arrow body - curved arc
-let arrowStartX: CGFloat = 220
-let arrowEndX: CGFloat = 440
-let arrowY: CGFloat = 200
+// Arrow body - curved arc (icons are at y=105 in Finder coords, which is y=195 in CG coords)
+let arrowStartX: CGFloat = 170
+let arrowEndX: CGFloat = 270
+let arrowY: CGFloat = 195
 
 context.move(to: CGPoint(x: arrowStartX, y: arrowY))
-context.addQuadCurve(to: CGPoint(x: arrowEndX - 20, y: arrowY), control: CGPoint(x: (arrowStartX + arrowEndX) / 2, y: arrowY - 40))
+context.addQuadCurve(to: CGPoint(x: arrowEndX - 15, y: arrowY), control: CGPoint(x: (arrowStartX + arrowEndX) / 2, y: arrowY - 30))
 context.strokePath()
 
 // Arrow head
-context.move(to: CGPoint(x: arrowEndX - 35, y: arrowY - 15))
-context.addLine(to: CGPoint(x: arrowEndX - 15, y: arrowY))
-context.addLine(to: CGPoint(x: arrowEndX - 35, y: arrowY + 15))
+context.move(to: CGPoint(x: arrowEndX - 28, y: arrowY - 12))
+context.addLine(to: CGPoint(x: arrowEndX - 12, y: arrowY))
+context.addLine(to: CGPoint(x: arrowEndX - 28, y: arrowY + 12))
 context.strokePath()
 
-// Draw text
-let textAttributes: [NSAttributedString.Key: Any] = [
-    .font: NSFont.systemFont(ofSize: 14, weight: .medium),
-    .foregroundColor: NSColor(white: 0.6, alpha: 1.0)
-]
-
-// Draw "Drag to Install" text
+// Draw custom labels in white (to replace Finder's black labels)
 NSGraphicsContext.saveGraphicsState()
 let nsContext = NSGraphicsContext(cgContext: context, flipped: false)
 NSGraphicsContext.current = nsContext
 
-let dragText = "Drag to Install"
-let dragTextSize = dragText.size(withAttributes: textAttributes)
-let dragTextRect = CGRect(
-    x: (width - dragTextSize.width) / 2,
-    y: 95,
-    width: dragTextSize.width,
-    height: dragTextSize.height
+let labelAttributes: [NSAttributedString.Key: Any] = [
+    .font: NSFont.systemFont(ofSize: 13, weight: .regular),
+    .foregroundColor: NSColor(white: 0.9, alpha: 1.0)
+]
+
+// Icon positions in Finder: (110, 105) and (330, 105)
+// In CG coords (y from bottom): icon center at y = 300 - 105 = 195
+// Labels appear below icons, roughly at y = 195 - 64 - 30 = 101 (accounting for icon size and padding)
+let labelY: CGFloat = 95
+
+// A-IQ.app label (centered under icon at x=110)
+let appLabel = "A-IQ.app"
+let appLabelSize = appLabel.size(withAttributes: labelAttributes)
+let appLabelRect = CGRect(
+    x: 110 - appLabelSize.width / 2,
+    y: labelY,
+    width: appLabelSize.width,
+    height: appLabelSize.height
 )
-dragText.draw(in: dragTextRect, withAttributes: textAttributes)
+appLabel.draw(in: appLabelRect, withAttributes: labelAttributes)
+
+// Applications label (centered under icon at x=330)
+let appsLabel = "Applications"
+let appsLabelSize = appsLabel.size(withAttributes: labelAttributes)
+let appsLabelRect = CGRect(
+    x: 330 - appsLabelSize.width / 2,
+    y: labelY,
+    width: appsLabelSize.width,
+    height: appsLabelSize.height
+)
+appsLabel.draw(in: appsLabelRect, withAttributes: labelAttributes)
 
 NSGraphicsContext.restoreGraphicsState()
 
