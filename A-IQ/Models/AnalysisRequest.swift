@@ -1,4 +1,3 @@
-import CoreGraphics
 import Foundation
 
 // MARK: - Analysis Request

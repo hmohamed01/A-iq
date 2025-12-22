@@ -1,4 +1,3 @@
-import Combine
 import OSLog
 import SwiftData
 import SwiftUI
@@ -266,8 +265,11 @@ final class AppState: ObservableObject {
     /// Save analysis result to history
     private func saveToHistory(result: AggregatedResult, context: ModelContext) async {
         do {
-            // Create record (convenience init handles filename extraction)
-            let record = try AnalysisRecord(from: result)
+            // Create record with thumbnail setting from preferences
+            let record = try AnalysisRecord(
+                from: result,
+                storeThumbnail: settingsManager.storeThumbnailsInHistory
+            )
 
             // Insert into context
             context.insert(record)

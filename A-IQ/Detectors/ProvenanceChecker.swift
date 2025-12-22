@@ -18,9 +18,6 @@ actor ProvenanceChecker {
     private let c2paToolPath: URL?
     private let trustListPath: URL?
     private var trustedSigners: Set<String> = []
-
-    // MARK: State
-
     private var isTrustListLoaded = false
 
     // MARK: Initialization

@@ -98,7 +98,12 @@ struct ReportGenerator {
             panel.allowedContentTypes = [.pdf]
         }
 
-        let response = await panel.beginSheetModal(for: NSApp.keyWindow!)
+        let response: NSApplication.ModalResponse
+        if let keyWindow = NSApp.keyWindow {
+            response = await panel.beginSheetModal(for: keyWindow)
+        } else {
+            response = panel.runModal()
+        }
 
         guard response == .OK, let url = panel.url else {
             return false
@@ -144,7 +149,12 @@ struct ReportGenerator {
             panel.allowedContentTypes = [.pdf]
         }
 
-        let response = await panel.beginSheetModal(for: NSApp.keyWindow!)
+        let response: NSApplication.ModalResponse
+        if let keyWindow = NSApp.keyWindow {
+            response = await panel.beginSheetModal(for: keyWindow)
+        } else {
+            response = panel.runModal()
+        }
 
         guard response == .OK, let url = panel.url else {
             return false

@@ -1,4 +1,3 @@
-import Combine
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -38,6 +37,11 @@ final class SettingsManager: ObservableObject {
     @AppStorage("historyRetentionDays")
     var historyRetentionDays: Int = 0
 
+    /// Whether to store thumbnails in history (disable for privacy)
+    /// Implements: Req 8.7
+    @AppStorage("storeThumbnailsInHistory")
+    var storeThumbnailsInHistory: Bool = true
+
     // MARK: Computed Properties
 
     /// Sensitivity adjustment for ResultAggregator (-0.1 to +0.1)
@@ -53,7 +57,8 @@ final class SettingsManager: ObservableObject {
             !autoAnalyzeOnDrop ||
             showELAByDefault ||
             !includeTimestampsInReports ||
-            historyRetentionDays != 0
+            historyRetentionDays != 0 ||
+            !storeThumbnailsInHistory
     }
 
     // MARK: Methods
@@ -67,6 +72,7 @@ final class SettingsManager: ObservableObject {
         showELAByDefault = false
         includeTimestampsInReports = true
         historyRetentionDays = 0
+        storeThumbnailsInHistory = true
     }
 }
 

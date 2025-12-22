@@ -2,7 +2,6 @@ import CoreGraphics
 import Foundation
 import ImageIO
 import OSLog
-import UniformTypeIdentifiers
 
 // MARK: - Logger
 

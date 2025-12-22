@@ -67,7 +67,10 @@ final class AnalysisRecord {
     }
 
     /// Create from an AggregatedResult
-    convenience init(from result: AggregatedResult) throws {
+    /// - Parameters:
+    ///   - result: The analysis result to store
+    ///   - storeThumbnail: Whether to store the thumbnail (disable for privacy)
+    convenience init(from result: AggregatedResult, storeThumbnail: Bool = true) throws {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         let jsonData = try encoder.encode(result)
@@ -77,10 +80,14 @@ final class AnalysisRecord {
             dimensions = "\(Int(size.width))x\(Int(size.height))"
         }
 
+        let thumbnail: Data? = storeThumbnail
+            ? result.imageThumbnail?.jpegData(compressionQuality: 0.7)
+            : nil
+
         self.init(
             id: result.id,
             filename: result.imageSource.displayName,
-            thumbnailData: result.imageThumbnail?.jpegData(compressionQuality: 0.7),
+            thumbnailData: thumbnail,
             timestamp: result.timestamp,
             overallScore: result.overallScore,
             classification: result.classification.rawValue,
