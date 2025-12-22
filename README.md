@@ -61,7 +61,7 @@ Each analysis shows weighted contributions from four independent detectors:
 
 - **ML Detection (40%)**: SigLIP Vision Transformer trained on modern AI generators (DALL-E, Midjourney, Stable Diffusion, etc.)
 - **Provenance (30%)**: Checks C2PA content credentials for digital signatures from known AI tools
-- **Metadata (15%)**: Analyzes EXIF/IPTC for AI software signatures, missing camera data, or timestamp anomalies
+- **Metadata (15%)**: Analyzes EXIF/IPTC/XMP for 60+ AI software signatures, thumbnail mismatches, color profile anomalies, and embedded generation parameters
 - **Forensics (15%)**: Error Level Analysis detects compression inconsistencies and manipulation artifacts
 
 ## Supported Formats
@@ -88,11 +88,21 @@ The core ML detector uses a SigLIP (Sigmoid Loss Image-Language Pretraining) Vis
 Checks for Content Credentials embedded in images using the C2PA standard. When valid credentials from a trusted signer indicate an AI tool was used (DALL-E, Midjourney, Stable Diffusion, Adobe Firefly, etc.), this provides definitive proof of AI generation.
 
 ### Metadata Analysis
-Examines EXIF, IPTC, and TIFF metadata for:
-- AI software signatures (e.g., "DALL-E", "Midjourney" in software field)
+Examines EXIF, IPTC, TIFF, and XMP metadata using multiple detection methods:
+
+**AI Software Detection (60+ signatures):**
+- DALL-E, Midjourney, Stable Diffusion, Flux, Fooocus, ComfyUI, and many more
+- Detects AI pipeline software (Pillow, PyTorch, OpenCV, ImageMagick)
+
+**Anomaly Detection:**
 - Missing EXIF data in JPEG files (common in AI-generated images)
 - Timestamp anomalies (future dates, pre-digital era dates)
 - Absence of camera information
+
+**Advanced Checks:**
+- Thumbnail mismatch detection (compares embedded thumbnail to main image)
+- Color profile analysis (generic profiles, camera/profile brand mismatches)
+- XMP/IPTC deep inspection (AI prompts, generation parameters, seed values)
 
 ### Forensic Analysis
 Performs Error Level Analysis (ELA) on JPEG images:
