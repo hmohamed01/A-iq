@@ -13,11 +13,11 @@ struct AnalysisView: View {
         HSplitView {
             // Left panel: Drop zone and controls
             dropZonePanel
-                .frame(minWidth: 320, idealWidth: 400)
+                .frame(minWidth: 340, maxWidth: 400)
 
             // Right panel: Results
             resultsPanel
-                .frame(minWidth: 400)
+                .frame(minWidth: 500)
         }
         .background(AIQColors.paperWhite)
         .toolbar {
@@ -145,66 +145,88 @@ struct AnalysisView: View {
     }
 
     private var batchResultsList: some View {
-        NavigationSplitView {
-            List(appState.batchResults, selection: $selectedResultID) { result in
-                HStack(spacing: AIQSpacing.md) {
-                    // Thumbnail
-                    if let thumbnail = result.imageThumbnail {
-                        Image(thumbnail, scale: 1.0, label: Text("Thumbnail"))
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 44, height: 44)
-                            .clipShape(RoundedRectangle(cornerRadius: AIQRadius.sm, style: .continuous))
-                    } else {
-                        RoundedRectangle(cornerRadius: AIQRadius.sm, style: .continuous)
-                            .fill(AIQColors.subtleBorder)
-                            .frame(width: 44, height: 44)
-                    }
-
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(result.imageSource.displayName)
-                            .font(.subheadline.weight(.medium))
-                            .foregroundStyle(AIQColors.primaryText)
-                            .lineLimit(1)
-
-                        HStack(spacing: 4) {
-                            Circle()
-                                .fill(classificationColor(result.classification))
-                                .frame(width: 8, height: 8)
-
-                            Text(result.classification.shortName)
-                                .font(.caption)
-                                .foregroundStyle(classificationColor(result.classification))
-                        }
-                    }
-
+        HSplitView {
+            // Left: Batch results list
+            VStack(spacing: 0) {
+                // Header
+                HStack {
+                    Text("Batch Results")
+                        .font(.headline)
+                        .foregroundStyle(AIQColors.primaryText)
                     Spacer()
-
-                    Text("\(result.scorePercentage)%")
-                        .font(.subheadline.weight(.medium).monospacedDigit())
+                    Text("\(appState.batchResults.count) images")
+                        .font(.subheadline)
                         .foregroundStyle(AIQColors.secondaryText)
                 }
-                .padding(.vertical, 4)
-                .tag(result.id)
-            }
-            .listStyle(.sidebar)
-            .navigationTitle("Batch Results (\(appState.batchResults.count))")
-            .onAppear {
-                if selectedResultID == nil, let first = appState.batchResults.first {
-                    selectedResultID = first.id
+                .padding(.horizontal, AIQSpacing.md)
+                .padding(.vertical, AIQSpacing.sm)
+                .background(AIQColors.subtleBorder.opacity(0.3))
+
+                List(appState.batchResults, selection: $selectedResultID) { result in
+                    HStack(spacing: AIQSpacing.md) {
+                        // Thumbnail
+                        if let thumbnail = result.imageThumbnail {
+                            Image(thumbnail, scale: 1.0, label: Text("Thumbnail"))
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 44, height: 44)
+                                .clipShape(RoundedRectangle(cornerRadius: AIQRadius.sm, style: .continuous))
+                        } else {
+                            RoundedRectangle(cornerRadius: AIQRadius.sm, style: .continuous)
+                                .fill(AIQColors.subtleBorder)
+                                .frame(width: 44, height: 44)
+                        }
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(result.imageSource.displayName)
+                                .font(.subheadline.weight(.medium))
+                                .foregroundStyle(AIQColors.primaryText)
+                                .lineLimit(1)
+
+                            HStack(spacing: 4) {
+                                Circle()
+                                    .fill(classificationColor(result.classification))
+                                    .frame(width: 8, height: 8)
+
+                                Text(result.classification.shortName)
+                                    .font(.caption)
+                                    .foregroundStyle(classificationColor(result.classification))
+                            }
+                        }
+
+                        Spacer()
+
+                        Text("\(result.scorePercentage)%")
+                            .font(.subheadline.weight(.medium).monospacedDigit())
+                            .foregroundStyle(AIQColors.secondaryText)
+                    }
+                    .padding(.vertical, 4)
+                    .tag(result.id)
+                }
+                .listStyle(.sidebar)
+                .onAppear {
+                    if selectedResultID == nil, let first = appState.batchResults.first {
+                        selectedResultID = first.id
+                    }
                 }
             }
-        } detail: {
-            if let selectedID = selectedResultID,
-               let selectedResult = appState.batchResults.first(where: { $0.id == selectedID })
-            {
-                ResultsDetailView(result: selectedResult)
-            } else if let firstResult = appState.batchResults.first {
-                ResultsDetailView(result: firstResult)
-            } else {
-                Text("Select a result")
-                    .foregroundStyle(AIQColors.secondaryText)
+            .frame(minWidth: 280, idealWidth: 340)
+
+            // Right: Detail view
+            Group {
+                if let selectedID = selectedResultID,
+                   let selectedResult = appState.batchResults.first(where: { $0.id == selectedID })
+                {
+                    ResultsDetailView(result: selectedResult)
+                } else if let firstResult = appState.batchResults.first {
+                    ResultsDetailView(result: firstResult)
+                } else {
+                    Text("Select a result")
+                        .foregroundStyle(AIQColors.secondaryText)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
             }
+            .frame(minWidth: 350)
         }
     }
 

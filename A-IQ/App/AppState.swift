@@ -92,6 +92,8 @@ final class AppState: ObservableObject {
         analysisProgress = 0
         errorMessage = nil
         statusMessage = "Analyzing image..."
+        // Clear batch results when doing single file analysis
+        batchResults = []
 
         let options = createAnalysisOptions()
 
