@@ -54,10 +54,16 @@ struct AppCommands: Commands {
             .keyboardShortcut("2", modifiers: .command)
         }
 
-        // Help menu - About item
+        // Help menu
         CommandGroup(replacing: .help) {
             Button("About A-IQ") {
                 showAboutWindow()
+            }
+
+            Divider()
+
+            Button("Report an Issue...") {
+                reportIssue()
             }
         }
     }
@@ -87,6 +93,12 @@ struct AppCommands: Commands {
 
     private func showAboutWindow() {
         NSApplication.shared.orderFrontStandardAboutPanel(nil)
+    }
+
+    private func reportIssue() {
+        if let url = URL(string: "https://agenticstudio.gumroad.com/l/mrxnbp") {
+            NSWorkspace.shared.open(url)
+        }
     }
 }
 
