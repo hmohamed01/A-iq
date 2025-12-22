@@ -108,3 +108,8 @@ AppIcon.svg
 # Uncomment if using Git LFS for these:
 # A-IQ/Resources/*.mlmodelc
 # A-IQ/Resources/c2patool
+
+# ===================
+# Test assets
+# ===================
+test-images/
