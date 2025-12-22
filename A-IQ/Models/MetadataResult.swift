@@ -90,6 +90,14 @@ struct MetadataResult: DetectionResult, Codable, Sendable {
                 scoreFactors.append(0.9)
             case .impossibleDate, .futureDateDetected:
                 scoreFactors.append(0.5)
+            case .thumbnailMismatch:
+                scoreFactors.append(0.6) // Strong indicator of manipulation
+            case .suspiciousColorProfile:
+                scoreFactors.append(0.5) // Moderate indicator
+            case .suspiciousQuantization:
+                scoreFactors.append(0.55) // Moderate-strong indicator
+            case .suspiciousXMP:
+                scoreFactors.append(0.7) // Strong indicator (AI traces in XMP)
             case .missingExif:
                 scoreFactors.append(0.4)
             case .inconsistentTimestamps:
@@ -272,6 +280,10 @@ enum AnomalyType: String, Sendable, Codable {
     case futureDateDetected = "future_date"
     case impossibleDate = "impossible_date"
     case inconsistentTimestamps = "inconsistent_timestamps"
+    case thumbnailMismatch = "thumbnail_mismatch"
+    case suspiciousColorProfile = "suspicious_color_profile"
+    case suspiciousQuantization = "suspicious_quantization"
+    case suspiciousXMP = "suspicious_xmp"
 
     var displayName: String {
         switch self {
@@ -280,6 +292,10 @@ enum AnomalyType: String, Sendable, Codable {
         case .futureDateDetected: return "Future Date"
         case .impossibleDate: return "Impossible Date"
         case .inconsistentTimestamps: return "Inconsistent Timestamps"
+        case .thumbnailMismatch: return "Thumbnail Mismatch"
+        case .suspiciousColorProfile: return "Suspicious Color Profile"
+        case .suspiciousQuantization: return "Suspicious Compression"
+        case .suspiciousXMP: return "Suspicious XMP Data"
         }
     }
 
@@ -288,7 +304,8 @@ enum AnomalyType: String, Sendable, Codable {
         case .missingExif: return .metadataAbsent
         case .aiToolDetected: return .metadataAISoftware
         case .futureDateDetected, .impossibleDate: return .metadataDateAnomaly
-        case .inconsistentTimestamps: return .metadataAnomaly
+        case .inconsistentTimestamps, .thumbnailMismatch, .suspiciousColorProfile,
+             .suspiciousQuantization, .suspiciousXMP: return .metadataAnomaly
         }
     }
 }
@@ -299,19 +316,97 @@ extension MetadataResult {
     /// Known AI software signatures in metadata
     /// Implements: Req 4.4
     static let aiSoftwarePatterns: [String] = [
-        "Adobe Firefly",
-        "Photoshop Generative",
+        // OpenAI / Microsoft
         "DALL-E",
         "DALL·E",
-        "Midjourney",
+        "OpenAI",
+        "Bing Image Creator",
+        "Microsoft Designer",
+        "Copilot",
+
+        // Adobe
+        "Adobe Firefly",
+        "Photoshop Generative",
+        "Generative Fill",
+        "Generative Expand",
+
+        // Stability AI / Stable Diffusion ecosystem
         "Stable Diffusion",
+        "SDXL",
+        "SD 1.5",
+        "SD 2.1",
+        "DreamStudio",
         "ComfyUI",
         "Automatic1111",
+        "A1111",
+        "AUTOMATIC1111",
         "InvokeAI",
+        "Fooocus",
+        "Forge",
+        "SD.Next",
+        "DiffusionBee",
+
+        // Midjourney
+        "Midjourney",
+        "MJ",
+
+        // Google
+        "Imagen",
+        "ImageFX",
+        "Google AI",
+
+        // Other major platforms
         "Leonardo.ai",
+        "Leonardo AI",
         "Runway",
-        "Bing Image Creator",
-        "DreamStudio",
+        "RunwayML",
+        "Flux",
+        "Black Forest Labs",
+        "Ideogram",
+        "Recraft",
+        "Playground AI",
+        "NightCafe",
+        "Nightcafe",
+        "Craiyon",
+        "WOMBO Dream",
+        "Wombo",
+        "Artbreeder",
+        "Deep Dream",
+        "DeepDream",
+        "Jasper Art",
+        "Canva AI",
+        "Canva Magic",
+        "Shutterstock AI",
+        "Getty AI",
+        "Picsart AI",
+        "Fotor AI",
+        "Pixlr AI",
+
+        // Chinese AI tools
+        "Baidu AI",
+        "Tencent AI",
+        "Alibaba AI",
+        "ERNIE-ViLG",
+
+        // Open source / community
+        "Civitai",
+        "Tensor.Art",
+        "PixAI",
+        "SeaArt",
+        "Mage.space",
+
+        // Video/animation AI (may appear in frames)
+        "Pika Labs",
+        "Gen-2",
+        "Kaiber",
+        "Synthesia",
+
+        // Upscalers and enhancers (AI-based)
+        "Topaz AI",
+        "Gigapixel",
+        "Real-ESRGAN",
+        "GFPGAN",
+        "CodeFormer",
     ]
 
     /// Check if software string indicates AI involvement

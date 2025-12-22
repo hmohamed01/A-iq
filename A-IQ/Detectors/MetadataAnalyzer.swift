@@ -105,8 +105,27 @@ actor MetadataAnalyzer {
         }
 
         // Check for timestamp inconsistencies
-        let timestampAnomaly = checkTimestampConsistency(exif: exifDict, tiff: tiffDict)
-        if let anomaly = timestampAnomaly {
+        if let anomaly = checkTimestampConsistency(exif: exifDict, tiff: tiffDict) {
+            anomalies.append(anomaly)
+        }
+
+        // Check for thumbnail mismatch (JPEG only)
+        if isJPEG, let anomaly = checkThumbnailMismatch(source: source) {
+            anomalies.append(anomaly)
+        }
+
+        // Check for color profile anomalies
+        if let anomaly = checkColorProfile(properties: properties, cameraInfo: cameraInfo) {
+            anomalies.append(anomaly)
+        }
+
+        // Check JPEG compression characteristics
+        if let anomaly = checkJPEGCompression(properties: properties, isJPEG: isJPEG) {
+            anomalies.append(anomaly)
+        }
+
+        // Deep inspection of XMP/IPTC for AI indicators
+        if let anomaly = checkXMPAndIPTC(properties: properties) {
             anomalies.append(anomaly)
         }
 
@@ -314,6 +333,377 @@ actor MetadataAnalyzer {
                         "originalDate": originalDate ?? "",
                         "digitizedDate": digitizedDate ?? "",
                     ]
+                )
+            }
+        }
+
+        return nil
+    }
+
+    // MARK: Thumbnail Analysis
+
+    /// Check if embedded thumbnail differs significantly from main image
+    private func checkThumbnailMismatch(source: CGImageSource) -> MetadataAnomaly? {
+        // Get main image
+        guard let mainImage = CGImageSourceCreateImageAtIndex(source, 0, nil) else {
+            return nil
+        }
+
+        // Try to get embedded thumbnail
+        let thumbnailOptions: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageIfAbsent: false,
+            kCGImageSourceCreateThumbnailFromImageAlways: false,
+            kCGImageSourceThumbnailMaxPixelSize: 160
+        ]
+
+        guard let embeddedThumb = CGImageSourceCreateThumbnailAtIndex(
+            source, 0, thumbnailOptions as CFDictionary
+        ) else {
+            // No embedded thumbnail - not an anomaly by itself
+            return nil
+        }
+
+        // Create a scaled version of main image for comparison
+        let thumbWidth = embeddedThumb.width
+        let thumbHeight = embeddedThumb.height
+
+        guard let context = CGContext(
+            data: nil,
+            width: thumbWidth,
+            height: thumbHeight,
+            bitsPerComponent: 8,
+            bytesPerRow: thumbWidth * 4,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else {
+            return nil
+        }
+
+        context.interpolationQuality = .high
+        context.draw(mainImage, in: CGRect(x: 0, y: 0, width: thumbWidth, height: thumbHeight))
+
+        guard let scaledMain = context.makeImage() else {
+            return nil
+        }
+
+        // Compare histograms of both images
+        let difference = compareImageHistograms(embeddedThumb, scaledMain)
+
+        // Threshold: if difference is > 25%, it's suspicious
+        if difference > 0.25 {
+            return MetadataAnomaly(
+                type: .thumbnailMismatch,
+                description: "Embedded thumbnail differs from main image (\(Int(difference * 100))% difference)",
+                details: ["difference": String(format: "%.1f%%", difference * 100)]
+            )
+        }
+
+        return nil
+    }
+
+    /// Compare two images using simple histogram comparison
+    private func compareImageHistograms(_ image1: CGImage, _ image2: CGImage) -> Double {
+        // Simple average color comparison as a quick check
+        guard let data1 = image1.dataProvider?.data,
+              let data2 = image2.dataProvider?.data else {
+            return 0
+        }
+
+        let ptr1 = CFDataGetBytePtr(data1)
+        let ptr2 = CFDataGetBytePtr(data2)
+        let length = min(CFDataGetLength(data1), CFDataGetLength(data2))
+
+        guard length > 0 else { return 0 }
+
+        // Sample pixels and compare
+        var totalDiff: Double = 0
+        let sampleStep = max(1, length / 1000) // Sample up to 1000 pixels
+
+        var sampleCount = 0
+        var i = 0
+        while i < length - 3 {
+            let r1 = Double(ptr1![i])
+            let g1 = Double(ptr1![i + 1])
+            let b1 = Double(ptr1![i + 2])
+
+            let r2 = Double(ptr2![i])
+            let g2 = Double(ptr2![i + 1])
+            let b2 = Double(ptr2![i + 2])
+
+            // Normalized difference
+            let diff = (abs(r1 - r2) + abs(g1 - g2) + abs(b1 - b2)) / (3.0 * 255.0)
+            totalDiff += diff
+            sampleCount += 1
+
+            i += sampleStep * 4
+        }
+
+        return sampleCount > 0 ? totalDiff / Double(sampleCount) : 0
+    }
+
+    // MARK: Color Profile Analysis
+
+    /// Check for suspicious color profile patterns
+    private func checkColorProfile(properties: [String: Any], cameraInfo: CameraInfo?) -> MetadataAnomaly? {
+        let profileName = properties[kCGImagePropertyProfileName as String] as? String
+
+        // If camera info exists but no color profile, it's slightly suspicious
+        // Real cameras usually embed their color profile
+        if cameraInfo != nil && profileName == nil {
+            // Not flagging this as it's too common
+            return nil
+        }
+
+        // Check for generic/synthetic profiles that AI tools often use
+        if let profile = profileName?.lowercased() {
+            // sRGB is fine and common
+            // But certain patterns suggest AI generation
+            let suspiciousProfiles = [
+                "generic rgb",
+                "generic gray",
+                "uncalibrated",
+            ]
+
+            for suspicious in suspiciousProfiles {
+                if profile.contains(suspicious) {
+                    return MetadataAnomaly(
+                        type: .suspiciousColorProfile,
+                        description: "Generic color profile detected: \(profileName ?? "unknown")",
+                        details: ["profile": profileName ?? "unknown"]
+                    )
+                }
+            }
+        }
+
+        // If there's camera info but profile doesn't match camera manufacturer
+        if let camera = cameraInfo, let profile = profileName {
+            let cameraLower = camera.make.lowercased()
+            let profileLower = profile.lowercased()
+
+            // Camera-specific profiles should generally match
+            let cameraProfilePatterns = [
+                "canon": ["canon", "eos"],
+                "nikon": ["nikon", "nikkor"],
+                "sony": ["sony"],
+                "fuji": ["fuji", "fujifilm"],
+                "panasonic": ["panasonic", "lumix"],
+                "olympus": ["olympus"],
+                "leica": ["leica"],
+            ]
+
+            for (brand, patterns) in cameraProfilePatterns {
+                if cameraLower.contains(brand) {
+                    // Camera is from this brand
+                    let hasMatchingProfile = patterns.contains { profileLower.contains($0) }
+                    let hasCameraProfile = patterns.contains { profileLower.contains($0) }
+                        || profileLower.contains("camera")
+                        || profileLower.contains("embedded")
+
+                    // If profile mentions a different camera brand, suspicious
+                    for (otherBrand, otherPatterns) in cameraProfilePatterns where otherBrand != brand {
+                        if otherPatterns.contains(where: { profileLower.contains($0) }) {
+                            return MetadataAnomaly(
+                                type: .suspiciousColorProfile,
+                                description: "Color profile (\(profile)) doesn't match camera (\(camera.make))",
+                                details: ["profile": profile, "camera": camera.make]
+                            )
+                        }
+                    }
+                    break
+                }
+            }
+        }
+
+        return nil
+    }
+
+    // MARK: XMP/IPTC Deep Inspection
+
+    /// Deep inspection of XMP and IPTC metadata for AI indicators
+    private func checkXMPAndIPTC(properties: [String: Any]) -> MetadataAnomaly? {
+        // Get raw metadata as string for pattern matching
+        let rawDict = properties as NSDictionary
+        let rawString = rawDict.description.lowercased()
+
+        // Check for AI-related terms in any metadata field
+        let aiKeywords = [
+            "artificial intelligence",
+            "ai generated",
+            "ai-generated",
+            "machine learning",
+            "neural network",
+            "diffusion model",
+            "text-to-image",
+            "text2image",
+            "prompt:",
+            "negative prompt",
+            "cfg scale",
+            "sampling steps",
+            "sampler:",
+            "seed:",
+            "checkpoint",
+            "lora",
+            "embeddings",
+            "controlnet",
+            "img2img",
+            "inpainting",
+            "dreambooth",
+            "textual inversion",
+        ]
+
+        for keyword in aiKeywords {
+            if rawString.contains(keyword) {
+                return MetadataAnomaly(
+                    type: .suspiciousXMP,
+                    description: "AI-related term found in metadata: \"\(keyword)\"",
+                    details: ["keyword": keyword]
+                )
+            }
+        }
+
+        // Check IPTC keywords specifically
+        let iptcDict = properties[kCGImagePropertyIPTCDictionary as String] as? [String: Any]
+        if let keywords = iptcDict?[kCGImagePropertyIPTCKeywords as String] as? [String] {
+            let keywordsLower = keywords.joined(separator: " ").lowercased()
+
+            for aiKeyword in aiKeywords {
+                if keywordsLower.contains(aiKeyword) {
+                    return MetadataAnomaly(
+                        type: .suspiciousXMP,
+                        description: "AI-related keyword in IPTC: \"\(aiKeyword)\"",
+                        details: ["keywords": keywords.joined(separator: ", ")]
+                    )
+                }
+            }
+
+            // Also check for known AI tool names in keywords
+            for pattern in MetadataResult.aiSoftwarePatterns {
+                if keywordsLower.contains(pattern.lowercased()) {
+                    return MetadataAnomaly(
+                        type: .suspiciousXMP,
+                        description: "AI tool name found in IPTC keywords: \"\(pattern)\"",
+                        details: ["keywords": keywords.joined(separator: ", ")]
+                    )
+                }
+            }
+        }
+
+        // Check IPTC caption/description
+        if let caption = iptcDict?[kCGImagePropertyIPTCCaptionAbstract as String] as? String {
+            let captionLower = caption.lowercased()
+
+            for aiKeyword in aiKeywords {
+                if captionLower.contains(aiKeyword) {
+                    return MetadataAnomaly(
+                        type: .suspiciousXMP,
+                        description: "AI-related term in image caption",
+                        details: ["caption": caption]
+                    )
+                }
+            }
+        }
+
+        // Check for suspicious patterns in user comment
+        let exifDict = properties[kCGImagePropertyExifDictionary as String] as? [String: Any]
+        if let userComment = exifDict?[kCGImagePropertyExifUserComment as String] as? String {
+            let commentLower = userComment.lowercased()
+
+            // Check for generation parameters (common in SD outputs)
+            if commentLower.contains("steps:") && commentLower.contains("sampler:") {
+                return MetadataAnomaly(
+                    type: .suspiciousXMP,
+                    description: "Stable Diffusion generation parameters found in EXIF",
+                    details: ["userComment": String(userComment.prefix(200))]
+                )
+            }
+
+            // Check for embedded prompt
+            if commentLower.contains("prompt:") || commentLower.hasPrefix("a ") && commentLower.contains(",") {
+                // Likely a prompt string
+                let promptIndicators = ["masterpiece", "best quality", "highly detailed", "8k", "4k uhd", "hyperrealistic"]
+                for indicator in promptIndicators {
+                    if commentLower.contains(indicator) {
+                        return MetadataAnomaly(
+                            type: .suspiciousXMP,
+                            description: "AI prompt-like text detected in EXIF comment",
+                            details: ["indicator": indicator]
+                        )
+                    }
+                }
+            }
+        }
+
+        // Check for empty/stripped metadata combined with JPEG (suspicious)
+        // This is already handled by missingExif check
+
+        return nil
+    }
+
+    // MARK: JPEG Compression Analysis
+
+    /// Analyze JPEG compression characteristics for signs of re-encoding or AI generation
+    private func checkJPEGCompression(properties: [String: Any], isJPEG: Bool) -> MetadataAnomaly? {
+        guard isJPEG else { return nil }
+
+        // Check JFIF properties
+        let jfifDict = properties[kCGImagePropertyJFIFDictionary as String] as? [String: Any]
+
+        // Check for unusual JFIF density settings
+        // AI tools often output with default 72 DPI or unusual values
+        if let jfif = jfifDict {
+            let xDensity = jfif[kCGImagePropertyJFIFXDensity as String] as? Int ?? 72
+            let yDensity = jfif[kCGImagePropertyJFIFYDensity as String] as? Int ?? 72
+
+            // Very unusual densities can indicate synthetic origin
+            if xDensity == 1 && yDensity == 1 {
+                return MetadataAnomaly(
+                    type: .suspiciousQuantization,
+                    description: "JPEG has minimal density values (common in AI-generated images)",
+                    details: ["xDensity": String(xDensity), "yDensity": String(yDensity)]
+                )
+            }
+        }
+
+        // Check for Photoshop/editing software quality markers
+        // These are often in the 8BIM resource blocks but we can detect via software field
+        let tiffDict = properties[kCGImagePropertyTIFFDictionary as String] as? [String: Any]
+        if let software = tiffDict?[kCGImagePropertyTIFFSoftware as String] as? String {
+            let softwareLower = software.lowercased()
+
+            // Detect common image processing libraries used by AI pipelines
+            let aiPipelineIndicators = [
+                "pillow",
+                "pil",
+                "opencv",
+                "imagemagick",
+                "graphicsmagick",
+                "python",
+                "pytorch",
+                "tensorflow",
+                "torch",
+            ]
+
+            for indicator in aiPipelineIndicators {
+                if softwareLower.contains(indicator) {
+                    return MetadataAnomaly(
+                        type: .suspiciousQuantization,
+                        description: "Image processed with AI/ML pipeline software: \(software)",
+                        details: ["software": software]
+                    )
+                }
+            }
+        }
+
+        // Check depth - AI images sometimes have unusual bit depths
+        if let depth = properties[kCGImagePropertyDepth as String] as? Int {
+            // Standard is 8-bit per channel
+            // 16-bit is fine for HDR/RAW workflows
+            // Other values are unusual
+            if depth != 8 && depth != 16 && depth != 24 && depth != 32 {
+                return MetadataAnomaly(
+                    type: .suspiciousQuantization,
+                    description: "Unusual bit depth: \(depth)",
+                    details: ["depth": String(depth)]
                 )
             }
         }
