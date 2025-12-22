@@ -1,4 +1,9 @@
 import Foundation
+import OSLog
+
+// MARK: - Logger
+
+private let provenanceLogger = Logger(subsystem: "com.aiq.app", category: "Provenance")
 
 // MARK: - Provenance Checker
 
@@ -45,17 +50,26 @@ actor ProvenanceChecker {
 
     /// Load trusted signers from bundled trust list
     private func loadTrustList() async {
-        guard let path = trustListPath,
-              let data = try? Data(contentsOf: path),
-              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let signers = json["trusted_signers"] as? [String]
-        else {
-            // Use default trusted signers if trust list not found
+        guard let path = trustListPath else {
+            provenanceLogger.info("Trust list not bundled, using default signers")
             trustedSigners = Self.defaultTrustedSigners
             return
         }
 
-        trustedSigners = Set(signers)
+        do {
+            let data = try Data(contentsOf: path)
+            guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let signers = json["trusted_signers"] as? [String] else {
+                provenanceLogger.warning("Trust list has invalid format, using default signers")
+                trustedSigners = Self.defaultTrustedSigners
+                return
+            }
+            trustedSigners = Set(signers)
+            provenanceLogger.debug("Loaded \(signers.count) trusted signers from trust list")
+        } catch {
+            provenanceLogger.warning("Failed to load trust list: \(error.localizedDescription), using defaults")
+            trustedSigners = Self.defaultTrustedSigners
+        }
     }
 
     // MARK: Provenance Checking

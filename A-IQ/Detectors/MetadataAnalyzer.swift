@@ -409,11 +409,14 @@ actor MetadataAnalyzer {
             return 0
         }
 
-        let ptr1 = CFDataGetBytePtr(data1)
-        let ptr2 = CFDataGetBytePtr(data2)
-        let length = min(CFDataGetLength(data1), CFDataGetLength(data2))
+        // Safety: ensure pointers are valid before dereferencing
+        guard let ptr1 = CFDataGetBytePtr(data1),
+              let ptr2 = CFDataGetBytePtr(data2) else {
+            return 0
+        }
 
-        guard length > 0 else { return 0 }
+        let length = min(CFDataGetLength(data1), CFDataGetLength(data2))
+        guard length > 3 else { return 0 }
 
         // Sample pixels and compare
         var totalDiff: Double = 0
@@ -422,13 +425,13 @@ actor MetadataAnalyzer {
         var sampleCount = 0
         var i = 0
         while i < length - 3 {
-            let r1 = Double(ptr1![i])
-            let g1 = Double(ptr1![i + 1])
-            let b1 = Double(ptr1![i + 2])
+            let r1 = Double(ptr1[i])
+            let g1 = Double(ptr1[i + 1])
+            let b1 = Double(ptr1[i + 2])
 
-            let r2 = Double(ptr2![i])
-            let g2 = Double(ptr2![i + 1])
-            let b2 = Double(ptr2![i + 2])
+            let r2 = Double(ptr2[i])
+            let g2 = Double(ptr2[i + 1])
+            let b2 = Double(ptr2[i + 2])
 
             // Normalized difference
             let diff = (abs(r1 - r2) + abs(g1 - g2) + abs(b1 - b2)) / (3.0 * 255.0)

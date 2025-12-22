@@ -796,6 +796,8 @@ extension ForensicAnalyzer {
         let halfSize = size / 2
 
         // Use cached FFT setup (size must be 256 to match cached setup)
+        // Safety: size == 256 guarantees all arrays created with count: size
+        // will have non-empty buffers, so baseAddress is always non-nil
         guard size == 256, let fftSetup = self.fftSetup else {
             return nil
         }
