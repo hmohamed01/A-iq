@@ -14,22 +14,45 @@ struct ContentView: View {
     @State private var showWelcome = false
 
     var body: some View {
-        TabView(selection: $appState.selectedTab) {
-            AnalysisView()
-                .tabItem {
-                    Label(AppState.Tab.analyze.rawValue, systemImage: AppState.Tab.analyze.systemImage)
-                }
-                .tag(AppState.Tab.analyze)
-
-            HistoryView()
-                .tabItem {
-                    Label(AppState.Tab.history.rawValue, systemImage: AppState.Tab.history.systemImage)
-                }
-                .tag(AppState.Tab.history)
+        Group {
+            switch appState.selectedTab {
+            case .analyze:
+                AnalysisView()
+            case .history:
+                HistoryView()
+            }
         }
         .frame(minWidth: 800, minHeight: 600)
+        .toolbar {
+            // Tab picker in principal position (centered, fixed)
+            ToolbarItem(placement: .principal) {
+                HStack(spacing: 0) {
+                    ForEach(AppState.Tab.allCases, id: \.self) { tab in
+                        Button {
+                            appState.selectedTab = tab
+                        } label: {
+                            Image(systemName: tab.systemImage)
+                                .frame(width: 28, height: 20)
+                        }
+                        .buttonStyle(TabSegmentButtonStyle(isSelected: appState.selectedTab == tab))
+                        .help(tab.rawValue)
+                    }
+                }
+                .padding(2)
+                .background(Color(nsColor: .controlBackgroundColor))
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+            }
+        }
         .sheet(isPresented: $showWelcome) {
             WelcomeView(isPresented: $showWelcome)
+        }
+        .alert("Delete All History?", isPresented: $appState.showDeleteAllHistoryConfirmation) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete All", role: .destructive) {
+                appState.deleteAllHistory()
+            }
+        } message: {
+            Text("This will permanently delete all analysis history. This action cannot be undone.")
         }
         .onAppear {
             // Inject SwiftData ModelContext into AppState for history persistence
@@ -39,6 +62,26 @@ struct ContentView: View {
                 showWelcome = true
             }
         }
+    }
+}
+
+// MARK: - Tab Segment Button Style
+
+/// Custom button style for segmented tab control
+private struct TabSegmentButtonStyle: ButtonStyle {
+    let isSelected: Bool
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
+            .foregroundStyle(isSelected ? Color.primary : Color.secondary)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(isSelected ? Color(nsColor: .controlAccentColor).opacity(0.15) : Color.clear)
+            )
+            .contentShape(Rectangle())
     }
 }
 

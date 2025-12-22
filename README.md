@@ -60,9 +60,9 @@ A-IQ provides a confidence score from 0-100%:
 Each analysis shows weighted contributions from four independent detectors:
 
 - **ML Detection (40%)**: SigLIP Vision Transformer trained on modern AI generators (DALL-E, Midjourney, Stable Diffusion, etc.)
-- **Provenance (30%)**: Checks C2PA content credentials for digital signatures from known AI tools
+- **Provenance (30%)**: C2PA content credentials with deep parsing of AI assertions, ingredients, and provenance chains
 - **Metadata (15%)**: Analyzes EXIF/IPTC/XMP for 60+ AI software signatures, thumbnail mismatches, color profile anomalies, and embedded generation parameters
-- **Forensics (15%)**: Error Level Analysis detects compression inconsistencies and manipulation artifacts
+- **Forensics (15%)**: Error Level Analysis and FFT frequency spectrum analysis detect compression inconsistencies and synthetic patterns
 
 ## Supported Formats
 
@@ -85,7 +85,30 @@ The core ML detector uses a SigLIP (Sigmoid Loss Image-Language Pretraining) Vis
 - Hardware: Neural Engine on Apple Silicon, GPU fallback on Intel
 
 ### Provenance (C2PA)
-Checks for Content Credentials embedded in images using the C2PA standard. When valid credentials from a trusted signer indicate an AI tool was used (DALL-E, Midjourney, Stable Diffusion, Adobe Firefly, etc.), this provides definitive proof of AI generation.
+Checks for Content Credentials embedded in images using the C2PA standard. Provides the most definitive signal when present.
+
+**Core Detection:**
+- Validates C2PA signatures against trusted signer database
+- Detects 60+ AI tools (shared with Metadata analyzer)
+- Valid C2PA + known AI tool = definitive proof of AI generation
+
+**Enhanced C2PA Parsing:**
+- **AI Generation Assertions**: Parses `c2pa.ai_generative_info` and `c2pa.synthetic` for explicit AI disclosure
+- **Model/Prompt Extraction**: Extracts AI model name, generation prompt, and parameters (cfg_scale, steps, seed)
+- **Ingredient Analysis**: Detects AI-generated parent images in composites via `c2pa.ingredients`
+- **Provenance Chain Scanning**: Identifies AI tool usage at any step in the image's history
+- **Training Status**: Checks `c2pa.ai_training` assertions
+
+**Nuanced Scoring:**
+| Score | Condition |
+|-------|-----------|
+| 100% | Valid C2PA + known AI tool or explicit AI assertion |
+| 95% | Explicit AI assertion (without valid credentials) |
+| 85% | AI tool in provenance chain |
+| 80% | Parent image is AI-generated |
+| 70% | Tampered credentials |
+| 50% | No credentials (neutral) |
+| 20% | Valid non-AI credentials (likely authentic) |
 
 ### Metadata Analysis
 Examines EXIF, IPTC, TIFF, and XMP metadata using multiple detection methods:

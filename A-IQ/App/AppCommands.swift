@@ -37,6 +37,12 @@ struct AppCommands: Commands {
             }
             .keyboardShortcut("e", modifiers: [.command, .shift])
             .disabled(appState.currentAnalysis == nil)
+
+            Divider()
+
+            Button("Delete All History...") {
+                appState.showDeleteAllHistoryConfirmation = true
+            }
         }
 
         // View menu
@@ -66,6 +72,10 @@ struct AppCommands: Commands {
                 reportIssue()
             }
         }
+
+        // Remove tab bar menu items (Show All Tabs, Show/Hide Tab Bar)
+        // These don't apply to this app
+        CommandGroup(replacing: .windowArrangement) {}
     }
 
     // MARK: Command Actions

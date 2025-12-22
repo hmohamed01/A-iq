@@ -11,9 +11,9 @@ struct HistoryView: View {
 
     @State private var searchText: String = ""
     @State private var selectedClassification: OverallClassification?
-    @State private var selectedRecord: AnalysisRecord?
+    @State private var selectedRecordIDs: Set<AnalysisRecord.ID> = []
     @State private var showingDeleteConfirmation: Bool = false
-    @State private var recordToDelete: AnalysisRecord?
+    @State private var recordsToDelete: [AnalysisRecord] = []
 
     var body: some View {
         NavigationSplitView {
@@ -21,8 +21,10 @@ struct HistoryView: View {
             historyList
                 .navigationSplitViewColumnWidth(min: 250, ideal: 300)
         } detail: {
-            // Detail view
-            if let record = selectedRecord {
+            // Detail view - show first selected record
+            if let firstSelectedID = selectedRecordIDs.first,
+               let record = records.first(where: { $0.id == firstSelectedID })
+            {
                 recordDetailView(record)
             } else {
                 emptyDetailView
@@ -37,28 +39,46 @@ struct HistoryView: View {
                 deleteSelectedButton
             }
         }
-        .alert("Delete Analysis?", isPresented: $showingDeleteConfirmation) {
-            Button("Cancel", role: .cancel) {}
+        .alert(deleteAlertTitle, isPresented: $showingDeleteConfirmation) {
+            Button("Cancel", role: .cancel) {
+                recordsToDelete = []
+            }
             Button("Delete", role: .destructive) {
-                if let record = recordToDelete {
-                    deleteRecord(record)
-                }
+                deleteRecords(recordsToDelete)
+                recordsToDelete = []
             }
         } message: {
             Text("This action cannot be undone.")
         }
     }
 
+    /// Title for delete confirmation alert
+    private var deleteAlertTitle: String {
+        let count = recordsToDelete.count
+        if count == 1 {
+            return "Delete Analysis?"
+        } else {
+            return "Delete \(count) Analyses?"
+        }
+    }
+
     // MARK: History List
 
     private var historyList: some View {
-        List(filteredRecords, selection: $selectedRecord) { record in
+        List(filteredRecords, id: \.id, selection: $selectedRecordIDs) { record in
             historyRow(record)
-                .tag(record)
+                .tag(record.id)
                 .contextMenu {
-                    Button("Delete") {
-                        recordToDelete = record
-                        showingDeleteConfirmation = true
+                    if selectedRecordIDs.contains(record.id), selectedRecordIDs.count > 1 {
+                        Button("Delete \(selectedRecordIDs.count) Selected") {
+                            recordsToDelete = selectedRecords
+                            showingDeleteConfirmation = true
+                        }
+                    } else {
+                        Button("Delete") {
+                            recordsToDelete = [record]
+                            showingDeleteConfirmation = true
+                        }
                     }
                 }
         }
@@ -67,6 +87,11 @@ struct HistoryView: View {
                 emptyListView
             }
         }
+    }
+
+    /// Get records for current selection
+    private var selectedRecords: [AnalysisRecord] {
+        records.filter { selectedRecordIDs.contains($0.id) }
     }
 
     private func historyRow(_ record: AnalysisRecord) -> some View {
@@ -198,15 +223,19 @@ struct HistoryView: View {
 
     private var deleteSelectedButton: some View {
         Button(role: .destructive) {
-            if let selected = selectedRecord {
-                recordToDelete = selected
-                showingDeleteConfirmation = true
-            }
+            recordsToDelete = selectedRecords
+            showingDeleteConfirmation = true
         } label: {
-            Label("Delete", systemImage: "trash")
+            if selectedRecordIDs.count > 1 {
+                Label("Delete (\(selectedRecordIDs.count))", systemImage: "trash")
+            } else {
+                Label("Delete", systemImage: "trash")
+            }
         }
-        .disabled(selectedRecord == nil)
-        .help("Delete selected analysis")
+        .disabled(selectedRecordIDs.isEmpty)
+        .help(selectedRecordIDs.count > 1
+            ? "Delete \(selectedRecordIDs.count) selected analyses"
+            : "Delete selected analysis")
     }
 
     // MARK: Filtering
@@ -227,10 +256,10 @@ struct HistoryView: View {
 
     // MARK: Actions
 
-    private func deleteRecord(_ record: AnalysisRecord) {
-        modelContext.delete(record)
-        if selectedRecord?.id == record.id {
-            selectedRecord = nil
+    private func deleteRecords(_ records: [AnalysisRecord]) {
+        for record in records {
+            modelContext.delete(record)
+            selectedRecordIDs.remove(record.id)
         }
     }
 }

@@ -38,6 +38,9 @@ final class AppState: ObservableObject {
     /// Currently selected tab
     @Published var selectedTab: Tab = .analyze
 
+    /// Show delete all history confirmation dialog
+    @Published var showDeleteAllHistoryConfirmation: Bool = false
+
     /// Current analysis task (for cancellation)
     private var currentAnalysisTask: Task<Void, Never>?
 
@@ -247,6 +250,24 @@ final class AppState: ObservableObject {
         isAnalyzing = false
         batchQueue = []
         statusMessage = "Analysis cancelled"
+    }
+
+    /// Delete all analysis history
+    func deleteAllHistory() {
+        guard let context = modelContext else {
+            storageLogger.error("Cannot delete history: no model context")
+            return
+        }
+
+        do {
+            try context.delete(model: AnalysisRecord.self)
+            try context.save()
+            statusMessage = "All history deleted"
+            storageLogger.info("Successfully deleted all analysis history")
+        } catch {
+            errorMessage = "Failed to delete history: \(error.localizedDescription)"
+            storageLogger.error("Failed to delete all history: \(error.localizedDescription)")
+        }
     }
 
     // MARK: Private Helpers

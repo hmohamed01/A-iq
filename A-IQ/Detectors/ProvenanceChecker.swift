@@ -238,6 +238,11 @@ actor ProvenanceChecker {
             let provenanceChain = extractProvenanceChain(from: json)
             let creationTool = extractCreationTool(from: json)
 
+            // Extract AI-specific information
+            let aiGenerationInfo = extractAIGenerationInfo(from: json)
+            let ingredients = extractIngredients(from: json)
+            let usedForAITraining = extractAITrainingStatus(from: json)
+
             // Determine credential status
             let credentialStatus = determineCredentialStatus(
                 manifest: manifest,
@@ -248,7 +253,10 @@ actor ProvenanceChecker {
                 credentialStatus: credentialStatus,
                 signerInfo: signerInfo,
                 creationTool: creationTool,
-                provenanceChain: provenanceChain
+                provenanceChain: provenanceChain,
+                aiGenerationInfo: aiGenerationInfo,
+                ingredients: ingredients,
+                usedForAITraining: usedForAITraining
             )
 
         } catch {
@@ -342,49 +350,308 @@ actor ProvenanceChecker {
 
         // Try to extract actions from assertions
         if let assertions = json["assertions"] as? [[String: Any]] {
-            for assertion in assertions {
-                if assertion["label"] as? String == "c2pa.actions",
-                   let data = assertion["data"] as? [String: Any],
-                   let actions = data["actions"] as? [[String: Any]]
-                {
-                    for action in actions {
-                        let entry = ProvenanceEntry(
-                            action: action["action"] as? String ?? "unknown",
-                            tool: action["softwareAgent"] as? String ?? "unknown",
-                            timestamp: parseISO8601Date(action["when"] as? String),
-                            actor: action["actor"] as? String
-                        )
-                        chain.append(entry)
-                    }
-                }
-            }
+            chain.append(contentsOf: extractActionsFromAssertions(assertions))
         }
 
         // Also check manifests for history
         if let manifests = json["manifests"] as? [[String: Any]] {
             for manifest in manifests {
                 if let assertions = manifest["assertions"] as? [[String: Any]] {
-                    for assertion in assertions {
-                        if assertion["label"] as? String == "c2pa.actions",
-                           let data = assertion["data"] as? [String: Any],
-                           let actions = data["actions"] as? [[String: Any]]
-                        {
-                            for action in actions {
-                                let entry = ProvenanceEntry(
-                                    action: action["action"] as? String ?? "unknown",
-                                    tool: action["softwareAgent"] as? String ?? "unknown",
-                                    timestamp: parseISO8601Date(action["when"] as? String),
-                                    actor: action["actor"] as? String
-                                )
-                                chain.append(entry)
-                            }
-                        }
-                    }
+                    chain.append(contentsOf: extractActionsFromAssertions(assertions))
                 }
             }
         }
 
         return chain
+    }
+
+    /// Extract actions from assertions array
+    private func extractActionsFromAssertions(_ assertions: [[String: Any]]) -> [ProvenanceEntry] {
+        var entries: [ProvenanceEntry] = []
+
+        for assertion in assertions {
+            let label = assertion["label"] as? String ?? ""
+
+            // Check c2pa.actions for action history
+            if label == "c2pa.actions",
+               let data = assertion["data"] as? [String: Any],
+               let actions = data["actions"] as? [[String: Any]]
+            {
+                for action in actions {
+                    let tool = action["softwareAgent"] as? String ?? "unknown"
+                    // Check if this tool is a known AI tool
+                    let isAIAction = ProvenanceResult.containsKnownAITool(tool)
+
+                    // Also check if action indicates AI (c2pa.generated, etc.)
+                    let actionType = action["action"] as? String ?? "unknown"
+                    let isAIActionType = Self.aiActionTypes.contains { actionType.localizedCaseInsensitiveContains($0) }
+
+                    let entry = ProvenanceEntry(
+                        action: actionType,
+                        tool: tool,
+                        timestamp: parseISO8601Date(action["when"] as? String),
+                        actor: action["actor"] as? String,
+                        isAIAction: isAIAction || isAIActionType
+                    )
+                    entries.append(entry)
+                }
+            }
+
+            // Check c2pa.actions.v2 format as well
+            if label == "c2pa.actions.v2",
+               let data = assertion["data"] as? [String: Any],
+               let actions = data["actions"] as? [[String: Any]]
+            {
+                for action in actions {
+                    // V2 format may have different structure
+                    let tool = (action["softwareAgent"] as? [String: Any])?["name"] as? String
+                        ?? action["softwareAgent"] as? String
+                        ?? "unknown"
+                    let isAIAction = ProvenanceResult.containsKnownAITool(tool)
+
+                    let actionType = action["action"] as? String ?? "unknown"
+                    let isAIActionType = Self.aiActionTypes.contains { actionType.localizedCaseInsensitiveContains($0) }
+
+                    let entry = ProvenanceEntry(
+                        action: actionType,
+                        tool: tool,
+                        timestamp: parseISO8601Date(action["when"] as? String),
+                        actor: (action["actor"] as? [String: Any])?["name"] as? String ?? action["actor"] as? String,
+                        isAIAction: isAIAction || isAIActionType
+                    )
+                    entries.append(entry)
+                }
+            }
+        }
+
+        return entries
+    }
+
+    /// Action types that indicate AI involvement
+    private static let aiActionTypes: Set<String> = [
+        "c2pa.created",      // May indicate AI creation
+        "c2pa.generated",    // Synthetic content generation
+        "ai.generated",      // Explicit AI generation
+        "ai.enhanced",       // AI enhancement
+        "ai.modified",       // AI modification
+        "generative",        // Generative AI action
+    ]
+
+    // MARK: AI-Specific Extraction
+
+    /// Extract AI generation information from assertions
+    /// Looks for c2pa.ai_generative_info, c2pa.ai, and similar assertions
+    private func extractAIGenerationInfo(from json: [String: Any]) -> AIGenerationInfo? {
+        // Check assertions at top level
+        if let assertions = json["assertions"] as? [[String: Any]] {
+            if let info = extractAIInfoFromAssertions(assertions) {
+                return info
+            }
+        }
+
+        // Check manifests
+        if let manifests = json["manifests"] as? [[String: Any]] {
+            for manifest in manifests {
+                if let assertions = manifest["assertions"] as? [[String: Any]] {
+                    if let info = extractAIInfoFromAssertions(assertions) {
+                        return info
+                    }
+                }
+            }
+        }
+
+        return nil
+    }
+
+    /// Extract AI info from assertions array
+    private func extractAIInfoFromAssertions(_ assertions: [[String: Any]]) -> AIGenerationInfo? {
+        for assertion in assertions {
+            let label = assertion["label"] as? String ?? ""
+
+            // C2PA AI generative info assertion
+            if label.contains("ai_generative_info") || label.contains("ai.generative") {
+                let data = assertion["data"] as? [String: Any] ?? assertion
+
+                var parameters: [String: String] = [:]
+                // Extract common AI generation parameters
+                for key in ["cfg_scale", "steps", "sampler", "seed", "scheduler", "guidance_scale"] {
+                    if let value = data[key] {
+                        parameters[key] = String(describing: value)
+                    }
+                }
+
+                return AIGenerationInfo(
+                    isAIGenerated: true,
+                    model: data["model"] as? String ?? data["ai_model"] as? String,
+                    prompt: data["prompt"] as? String ?? data["positive_prompt"] as? String,
+                    version: data["version"] as? String ?? data["model_version"] as? String,
+                    parameters: parameters
+                )
+            }
+
+            // Check for synthetic media assertions
+            if label.contains("c2pa.synthetic") || label.contains("synthetic_media") {
+                return AIGenerationInfo(isAIGenerated: true)
+            }
+
+            // Check stds.schema-org.CreativeWork for AI authorship
+            if label == "stds.schema-org.CreativeWork",
+               let data = assertion["data"] as? [String: Any],
+               let author = data["author"] as? [[String: Any]]
+            {
+                for authorEntry in author {
+                    let name = authorEntry["name"] as? String ?? ""
+                    if ProvenanceResult.containsKnownAITool(name) {
+                        return AIGenerationInfo(
+                            isAIGenerated: true,
+                            model: name
+                        )
+                    }
+                }
+            }
+        }
+
+        return nil
+    }
+
+    /// Extract ingredient information from C2PA manifest
+    private func extractIngredients(from json: [String: Any]) -> [IngredientInfo] {
+        var ingredients: [IngredientInfo] = []
+
+        // Check for ingredients at top level
+        if let ingredientsList = json["ingredients"] as? [[String: Any]] {
+            ingredients.append(contentsOf: extractIngredientEntries(ingredientsList))
+        }
+
+        // Check manifests for ingredients
+        if let manifests = json["manifests"] as? [[String: Any]] {
+            for manifest in manifests {
+                if let ingredientsList = manifest["ingredients"] as? [[String: Any]] {
+                    ingredients.append(contentsOf: extractIngredientEntries(ingredientsList))
+                }
+            }
+        }
+
+        // Also check assertions for ingredient references
+        if let assertions = json["assertions"] as? [[String: Any]] {
+            ingredients.append(contentsOf: extractIngredientFromAssertions(assertions))
+        }
+
+        return ingredients
+    }
+
+    /// Extract ingredient entries from ingredients array
+    private func extractIngredientEntries(_ ingredientsList: [[String: Any]]) -> [IngredientInfo] {
+        return ingredientsList.map { ingredient in
+            let title = ingredient["title"] as? String
+                ?? ingredient["dc:title"] as? String
+                ?? ingredient["instance_id"] as? String
+
+            let format = ingredient["format"] as? String
+                ?? ingredient["dc:format"] as? String
+
+            let relationship = ingredient["relationship"] as? String
+
+            // Check if ingredient has its own manifest (has credentials)
+            let hasCredentials = ingredient["manifest"] != nil
+                || ingredient["c2pa_manifest"] != nil
+                || ingredient["validation_status"] != nil
+
+            // Check if ingredient's creation tool is AI
+            let creationTool = ingredient["claim_generator"] as? String
+            let isAI = creationTool.map { ProvenanceResult.containsKnownAITool($0) } ?? false
+
+            return IngredientInfo(
+                title: title,
+                format: format,
+                relationship: relationship,
+                hasCredentials: hasCredentials,
+                isAIGenerated: isAI,
+                creationTool: creationTool
+            )
+        }
+    }
+
+    /// Extract ingredient information from assertions
+    private func extractIngredientFromAssertions(_ assertions: [[String: Any]]) -> [IngredientInfo] {
+        var ingredients: [IngredientInfo] = []
+
+        for assertion in assertions {
+            let label = assertion["label"] as? String ?? ""
+
+            // Check for ingredient assertions
+            if label.contains("c2pa.ingredient") {
+                let data = assertion["data"] as? [String: Any] ?? assertion
+
+                let title = data["title"] as? String ?? data["dc:title"] as? String
+                let format = data["format"] as? String ?? data["dc:format"] as? String
+                let relationship = data["relationship"] as? String
+
+                let creationTool = data["claim_generator"] as? String
+                let isAI = creationTool.map { ProvenanceResult.containsKnownAITool($0) } ?? false
+
+                ingredients.append(IngredientInfo(
+                    title: title,
+                    format: format,
+                    relationship: relationship,
+                    hasCredentials: data["manifest"] != nil,
+                    isAIGenerated: isAI,
+                    creationTool: creationTool
+                ))
+            }
+        }
+
+        return ingredients
+    }
+
+    /// Check if content was used for AI training
+    private func extractAITrainingStatus(from json: [String: Any]) -> Bool {
+        // Check assertions for AI training opt-out/in
+        let allAssertions = collectAllAssertions(from: json)
+
+        for assertion in allAssertions {
+            let label = assertion["label"] as? String ?? ""
+
+            // C2PA AI training assertion
+            if label.contains("ai_training") || label.contains("c2pa.training") {
+                let data = assertion["data"] as? [String: Any] ?? assertion
+
+                // Check for various representations of "used for training"
+                if let used = data["use"] as? String {
+                    return used.lowercased() == "allowed" || used.lowercased() == "yes"
+                }
+                if let allowed = data["allowed"] as? Bool {
+                    return allowed
+                }
+                if let optOut = data["opt_out"] as? Bool {
+                    return !optOut
+                }
+
+                // Presence of this assertion without explicit opt-out may mean it was used
+                return true
+            }
+        }
+
+        return false
+    }
+
+    /// Collect all assertions from JSON (top-level and within manifests)
+    private func collectAllAssertions(from json: [String: Any]) -> [[String: Any]] {
+        var allAssertions: [[String: Any]] = []
+
+        if let assertions = json["assertions"] as? [[String: Any]] {
+            allAssertions.append(contentsOf: assertions)
+        }
+
+        if let manifests = json["manifests"] as? [[String: Any]] {
+            for manifest in manifests {
+                if let assertions = manifest["assertions"] as? [[String: Any]] {
+                    allAssertions.append(contentsOf: assertions)
+                }
+            }
+        }
+
+        return allAssertions
     }
 
     /// Determine credential status from manifest and signer

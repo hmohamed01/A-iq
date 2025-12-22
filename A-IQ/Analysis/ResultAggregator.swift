@@ -52,12 +52,22 @@ struct ResultAggregator {
             forensic: forensic
         )
 
-        // Apply high-confidence ML amplification (dampened if no corroboration)
+        // Check for contradicting signals (active disagreement, not just neutral)
+        let hasContradiction = checkForContradiction(
+            mlScore: ml?.score,
+            provenance: provenance,
+            metadata: metadata,
+            forensic: forensic
+        )
+
+        // Apply high-confidence ML amplification
+        // Now distinguishes between "no support" (neutral) and "active contradiction"
         let amplifiedScore = applyMLConfidenceAmplification(
             baseScore: score,
             mlScore: ml?.score,
             mlConfidence: ml?.confidence,
-            hasCorroboration: hasCorroboration
+            hasCorroboration: hasCorroboration,
+            hasContradiction: hasContradiction
         )
 
         // Apply sensitivity adjustment
@@ -345,14 +355,59 @@ struct ResultAggregator {
         return corroboratingSignals > 0
     }
 
+    /// Check if any signal actively contradicts the ML assessment
+    /// A contradiction is when a signal strongly disagrees (not just neutral)
+    private func checkForContradiction(
+        mlScore: Double?,
+        provenance: ProvenanceResult?,
+        metadata: MetadataResult?,
+        forensic: ForensicResult?
+    ) -> Bool {
+        guard let mlScore = mlScore else { return false }
+
+        let mlSaysAI = mlScore > 0.7
+        let mlSaysAuthentic = mlScore < 0.3
+
+        // Check if any signal strongly disagrees with ML
+        // Provenance contradiction
+        if let prov = provenance, prov.isSuccessful {
+            // ML says AI but provenance says authentic (valid non-AI credentials)
+            if mlSaysAI && prov.score < 0.3 && prov.credentialStatus == .valid {
+                return true
+            }
+            // ML says authentic but provenance confirms AI
+            if mlSaysAuthentic && prov.isDefinitivelyAI {
+                return true
+            }
+        }
+
+        // Metadata contradiction
+        if let meta = metadata, meta.isSuccessful {
+            // ML says AI but metadata has strong camera evidence
+            if mlSaysAI && meta.score < 0.25 && meta.cameraInfo != nil {
+                return true
+            }
+            // ML says authentic but metadata found AI tool
+            if mlSaysAuthentic && meta.score > 0.75 {
+                if let software = meta.softwareInfo, MetadataResult.isAISoftware(software) {
+                    return true
+                }
+            }
+        }
+
+        return false
+    }
+
     /// Apply ML confidence amplification when ML is highly confident
     /// When ML score is very high with high confidence, pull final score strongly toward ML score
-    /// Amplification is reduced when ML lacks corroboration from other signals
+    /// Key insight: neutral signals (50%) should NOT penalize a confident ML score
+    /// Only active contradictions should reduce confidence
     private func applyMLConfidenceAmplification(
         baseScore: Double,
         mlScore: Double?,
         mlConfidence: ResultConfidence?,
-        hasCorroboration: Bool
+        hasCorroboration: Bool,
+        hasContradiction: Bool
     ) -> Double {
         guard let mlScore = mlScore, let mlConfidence = mlConfidence else {
             return baseScore
@@ -363,96 +418,108 @@ struct ResultAggregator {
             return baseScore
         }
 
-        // Determine amplification strength based on corroboration
-        // Without corroboration, we're more skeptical of ML-only assessments
-        let amplificationFactor: Double = hasCorroboration ? 1.0 : 0.5
-
-        // For extremely high ML scores (>=99%)
-        // Only trust fully if corroborated; otherwise be more conservative
-        // This reduces false positives on professional portraits
-        if mlScore >= 0.99 {
-            if hasCorroboration {
-                return mlScore
-            } else {
-                // Without corroboration, cap the score to avoid confident false positives
-                // Blend: 75% ML, 25% base - pulls score down to ~75-85% range
-                let blendedScore = mlScore * 0.75 + baseScore * 0.25
-                // Cap at 85% without corroboration to indicate uncertainty
-                return min(blendedScore, 0.85)
-            }
+        // If there's active contradiction, be very conservative
+        if hasContradiction {
+            // Significant blending toward base score
+            let blendedScore = mlScore * 0.5 + baseScore * 0.5
+            return blendedScore
         }
 
-        // For very high ML scores (>98% but <99%)
-        if mlScore > 0.98 {
+        // Determine amplification based on corroboration
+        // Key change: without corroboration but also without contradiction,
+        // we trust ML much more than before (neutral signals = no opinion)
+        let amplificationFactor: Double
+        if hasCorroboration {
+            amplificationFactor = 1.0  // Full trust
+        } else {
+            amplificationFactor = 0.85  // High trust (was 0.5, now more generous)
+        }
+
+        // For extremely high ML scores (>=99%)
+        // When ML is this confident and nothing contradicts, trust it fully
+        if mlScore >= 0.99 {
             if hasCorroboration {
-                return mlScore
+                return mlScore  // 100%
             } else {
-                // Blend more conservatively without corroboration
-                let blendedScore = mlScore * 0.70 + baseScore * 0.30
-                return min(blendedScore, 0.80)
+                // Without corroboration but no contradiction: trust ML
+                // Return the ML score directly - neutral signals shouldn't penalize
+                return mlScore
             }
         }
 
         // For very high ML scores (>95%)
         if mlScore > 0.95 {
-            let mlWeight = 0.95 * amplificationFactor + (1.0 - amplificationFactor) * 0.6
-            let amplifiedScore = mlScore * mlWeight + baseScore * (1.0 - mlWeight)
-            return amplifiedScore
+            if hasCorroboration {
+                return mlScore
+            } else {
+                // Very slight blend, mostly trust ML
+                let blendedScore = mlScore * 0.97 + baseScore * 0.03
+                return blendedScore
+            }
         }
 
         // For high ML scores (>90%)
         if mlScore > 0.90 {
-            let mlWeight = 0.85 * amplificationFactor + (1.0 - amplificationFactor) * 0.5
+            let mlWeight = 0.90 * amplificationFactor
             let amplifiedScore = mlScore * mlWeight + baseScore * (1.0 - mlWeight)
             return amplifiedScore
         }
 
         // For moderately high ML scores (>80%)
         if mlScore > 0.80 {
-            let mlWeight = 0.70 * amplificationFactor + (1.0 - amplificationFactor) * 0.4
+            let mlWeight = 0.85 * amplificationFactor
             let amplifiedScore = mlScore * mlWeight + baseScore * (1.0 - mlWeight)
             return amplifiedScore
         }
 
+        // For moderately high ML scores (>70%)
+        if mlScore > 0.70 {
+            let mlWeight = 0.80 * amplificationFactor
+            let amplifiedScore = mlScore * mlWeight + baseScore * (1.0 - mlWeight)
+            return amplifiedScore
+        }
+
+        // === LOW SCORES (likely authentic) ===
+
         // For extremely low ML scores (<=1%)
-        // Only trust fully if corroborated; otherwise be conservative
+        // When ML is this confident it's authentic and nothing contradicts, trust it
         if mlScore <= 0.01 {
             if hasCorroboration {
                 return mlScore
             } else {
-                // Without corroboration, pull toward 15% to indicate some uncertainty
-                let blendedScore = mlScore * 0.75 + baseScore * 0.25
-                return max(blendedScore, 0.15)
+                // Without corroboration but no contradiction: trust ML
+                return mlScore
             }
         }
 
-        // For very low ML scores (<2% but >1% = certainly authentic)
-        if mlScore < 0.02 {
+        // For very low ML scores (<5%)
+        if mlScore < 0.05 {
             if hasCorroboration {
                 return mlScore
             } else {
-                let blendedScore = mlScore * 0.70 + baseScore * 0.30
-                return max(blendedScore, 0.20)
+                // Very slight blend, mostly trust ML
+                let blendedScore = mlScore * 0.97 + baseScore * 0.03
+                return blendedScore
             }
         }
 
-        // For very low ML scores (<5% = likely authentic)
-        if mlScore < 0.05 {
-            let mlWeight = 0.95 * amplificationFactor + (1.0 - amplificationFactor) * 0.6
-            let amplifiedScore = mlScore * mlWeight + baseScore * (1.0 - mlWeight)
-            return amplifiedScore
-        }
-
-        // For low ML scores (<10% = likely authentic)
+        // For low ML scores (<10%)
         if mlScore < 0.10 {
-            let mlWeight = 0.85 * amplificationFactor + (1.0 - amplificationFactor) * 0.5
+            let mlWeight = 0.90 * amplificationFactor
             let amplifiedScore = mlScore * mlWeight + baseScore * (1.0 - mlWeight)
             return amplifiedScore
         }
 
         // For somewhat low ML scores (<20%)
         if mlScore < 0.20 {
-            let mlWeight = 0.70 * amplificationFactor + (1.0 - amplificationFactor) * 0.4
+            let mlWeight = 0.85 * amplificationFactor
+            let amplifiedScore = mlScore * mlWeight + baseScore * (1.0 - mlWeight)
+            return amplifiedScore
+        }
+
+        // For low-moderate ML scores (<30%)
+        if mlScore < 0.30 {
+            let mlWeight = 0.80 * amplificationFactor
             let amplifiedScore = mlScore * mlWeight + baseScore * (1.0 - mlWeight)
             return amplifiedScore
         }
