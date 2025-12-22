@@ -1,3 +1,4 @@
+import AppKit
 import SwiftData
 import SwiftUI
 
@@ -13,6 +14,9 @@ struct AIQApp: App {
     let modelContainer: ModelContainer
 
     init() {
+        // Disable window tabbing (removes tab bar and "Show All Tabs" menu items)
+        NSWindow.allowsAutomaticWindowTabbing = false
+
         // Initialize SwiftData container
         do {
             let schema = Schema([AnalysisRecord.self])
