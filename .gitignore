@@ -103,8 +103,6 @@ scripts/
 # ===================
 AppIcon.svg
 gumroad-icon*.png
-agentic-studio-icon.svg
-agentic-studio*.png
 
 # ===================
 # Large binary resources (should be downloaded separately or via LFS)
