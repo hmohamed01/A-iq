@@ -94,9 +94,15 @@ CLAUDE.md
 GUMROAD_LISTING.md
 
 # ===================
-# Scripts (Development only)
+# Scripts (Development only, not packaging)
 # ===================
-scripts/
+scripts/convert_*.py
+scripts/*.log
+
+# ===================
+# Distribution output
+# ===================
+dist/
 
 # ===================
 # Source assets (not needed for build)
