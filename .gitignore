@@ -121,3 +121,9 @@ gumroad-icon*.png
 # Test assets
 # ===================
 test-images/
+
+# ===================
+# Model conversion artifacts
+# ===================
+scripts/model_conversion/*.mlmodelc/
+scripts/model_conversion/*.mlpackage/
