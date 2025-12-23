@@ -141,18 +141,20 @@ Performs Error Level Analysis (ELA) on JPEG images:
 For PNG/lossless formats, noise pattern analysis detects variance inconsistencies across image blocks.
 
 ### Face-Swap Detection
-When faces are detected in an image, A-IQ applies specialized forensic analysis to identify deepfake and face-swap manipulation:
+When faces are detected in an image, A-IQ applies ML-based deepfake detection to identify face-swap manipulation:
 
-**Detection Methods:**
-- **Boundary ELA (40%)**: Analyzes compression artifacts at face blend edges where swapped faces meet the original image
-- **Noise Discontinuity (35%)**: Compares sensor noise patterns inside and outside face regions—mismatches indicate different source images
-- **Lighting Consistency (25%)**: Checks gradient direction alignment between face and surroundings to detect lighting mismatches
+**ML-Based Detection:**
+Uses a SigLIP Vision Transformer model fine-tuned on the FaceForensics++ dataset (~94% accuracy). Each detected face is:
+1. Cropped with 20% padding for context
+2. Resized to 224×224 pixels
+3. Analyzed by the DeepfakeDetector neural network
+4. Scored based on "Fake" probability output
 
 **Per-Face Analysis:**
 Each detected face receives individual analysis with:
-- Composite score (0-100%)
-- Individual metric scores for each detection method
-- List of detected artifacts with severity (low/medium/high)
+- Deepfake probability score (0-100%)
+- Classification: Low (<30%), Medium (30-70%), High (>70%)
+- List of detected artifacts with severity
 - Face bounding box for visual reference
 
 **Dynamic Weighting:**
@@ -200,15 +202,20 @@ open A-IQ.xcodeproj
 The following files are required but not included in the repository:
 
 1. **ML Model** (`AIDetector.mlmodelc`)
-   - SigLIP Vision Transformer trained for AI detection
+   - SigLIP Vision Transformer trained for AI detection (164MB)
    - Place in `A-IQ/Resources/`
 
-2. **c2patool** binary
+2. **Deepfake Model** (`DeepfakeDetector.mlmodelc`)
+   - SigLIP Vision Transformer for face-swap/deepfake detection (164MB)
+   - Source: prithivMLmods/deepfake-detector-model-v1 (Hugging Face)
+   - Place in `A-IQ/Resources/`
+
+3. **c2patool** binary
    - Download from [C2PA releases](https://github.com/contentauth/c2patool/releases)
    - Place in `A-IQ/Resources/`
    - Ensure execute permissions: `chmod +x c2patool`
 
-3. **Trust List** (`trust_list.json`)
+4. **Trust List** (`trust_list.json`)
    - JSON file listing trusted C2PA signers
    - Place in `A-IQ/Resources/`
 
