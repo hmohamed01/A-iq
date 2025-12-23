@@ -43,6 +43,12 @@ struct ResultsDetailView: View {
                         .aiqCard()
                 }
 
+                // Face-Swap Detection (if faces detected)
+                if result.faceSwapResult?.facesDetected == true {
+                    faceSwapSection
+                        .aiqCard()
+                }
+
                 // Evidence summary
                 evidenceSection
                     .aiqCard()
@@ -209,6 +215,26 @@ struct ResultsDetailView: View {
             .padding(.top, AIQSpacing.sm)
         } label: {
             Label("Error Level Analysis", systemImage: "waveform.path.ecg")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(AIQColors.primaryText)
+        }
+    }
+
+    // MARK: Face-Swap Section
+
+    private var faceSwapSection: some View {
+        DisclosureGroup(
+            isExpanded: Binding(
+                get: { expandedSections.contains("faceswap") },
+                set: { if $0 { expandedSections.insert("faceswap") } else { expandedSections.remove("faceswap") }}
+            )
+        ) {
+            if let faceSwap = result.faceSwapResult {
+                FaceSwapDetailView(result: faceSwap)
+                    .padding(.top, AIQSpacing.sm)
+            }
+        } label: {
+            Label("Face-Swap Detection", systemImage: "face.smiling")
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(AIQColors.primaryText)
         }

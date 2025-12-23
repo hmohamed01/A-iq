@@ -43,6 +43,7 @@ struct AggregatedResult: Identifiable, Sendable {
     let provenanceResult: ProvenanceResult?
     let metadataResult: MetadataResult?
     let forensicResult: ForensicResult?
+    let faceSwapResult: FaceSwapResult?
 
     // MARK: Signal Breakdown
 
@@ -69,6 +70,7 @@ struct AggregatedResult: Identifiable, Sendable {
         provenanceResult: ProvenanceResult? = nil,
         metadataResult: MetadataResult? = nil,
         forensicResult: ForensicResult? = nil,
+        faceSwapResult: FaceSwapResult? = nil,
         signalBreakdown: SignalBreakdown,
         totalAnalysisTimeMs: Int
     ) {
@@ -86,6 +88,7 @@ struct AggregatedResult: Identifiable, Sendable {
         self.provenanceResult = provenanceResult
         self.metadataResult = metadataResult
         self.forensicResult = forensicResult
+        self.faceSwapResult = faceSwapResult
         self.signalBreakdown = signalBreakdown
         self.totalAnalysisTimeMs = totalAnalysisTimeMs
     }
@@ -109,6 +112,7 @@ struct AggregatedResult: Identifiable, Sendable {
             provenanceResult: provenanceResult,
             metadataResult: metadataResult,
             forensicResult: forensicResult,
+            faceSwapResult: faceSwapResult,
             signalBreakdown: signalBreakdown,
             totalAnalysisTimeMs: totalAnalysisTimeMs
         )
@@ -128,6 +132,7 @@ struct AggregatedResult: Identifiable, Sendable {
         if let prov = provenanceResult { evidence.append(contentsOf: prov.evidence) }
         if let meta = metadataResult { evidence.append(contentsOf: meta.evidence) }
         if let forensic = forensicResult { evidence.append(contentsOf: forensic.evidence) }
+        if let faceSwap = faceSwapResult { evidence.append(contentsOf: faceSwap.evidence) }
         return evidence
     }
 
@@ -144,7 +149,8 @@ struct AggregatedResult: Identifiable, Sendable {
     /// Count of successful detectors
     var successfulDetectorCount: Int {
         [mlResult?.isSuccessful, provenanceResult?.isSuccessful,
-         metadataResult?.isSuccessful, forensicResult?.isSuccessful]
+         metadataResult?.isSuccessful, forensicResult?.isSuccessful,
+         faceSwapResult?.isSuccessful]
             .compactMap { $0 }
             .filter { $0 }
             .count
@@ -210,47 +216,77 @@ enum OverallClassification: String, Sendable, Codable, CaseIterable {
 /// Breakdown of each signal's contribution to the final score
 /// Implements: Req 6.7
 struct SignalBreakdown: Sendable, Codable {
-    /// ML detection contribution (weight: 40%)
+    /// ML detection contribution (weight: 40% without faces, 35% with faces)
     let mlContribution: SignalContribution
 
-    /// Provenance check contribution (weight: 30%)
+    /// Provenance check contribution (weight: 30% without faces, 25% with faces)
     let provenanceContribution: SignalContribution
 
-    /// Metadata analysis contribution (weight: 15%)
+    /// Metadata analysis contribution (weight: 15% without faces, 10% with faces)
     let metadataContribution: SignalContribution
 
-    /// Forensic analysis contribution (weight: 15%)
+    /// Forensic analysis contribution (weight: 15% without faces, 10% with faces)
     let forensicContribution: SignalContribution
 
-    /// Signal weights
+    /// Face-swap detection contribution (weight: 0% without faces, 20% with faces)
+    let faceSwapContribution: SignalContribution
+
+    /// Default signal weights (no faces detected)
     /// Implements: Req 6.2
     static let weights = SignalWeights(
         ml: 0.40,
         provenance: 0.30,
         metadata: 0.15,
-        forensic: 0.15
+        forensic: 0.15,
+        faceSwap: 0.0
     )
+
+    /// Dynamic weights based on whether faces were detected
+    static func weights(facesDetected: Bool) -> SignalWeights {
+        if facesDetected {
+            return SignalWeights(
+                ml: 0.35,
+                provenance: 0.25,
+                metadata: 0.10,
+                forensic: 0.10,
+                faceSwap: 0.20
+            )
+        } else {
+            return weights
+        }
+    }
 
     init(
         mlContribution: SignalContribution,
         provenanceContribution: SignalContribution,
         metadataContribution: SignalContribution,
-        forensicContribution: SignalContribution
+        forensicContribution: SignalContribution,
+        faceSwapContribution: SignalContribution = .unavailable(weight: 0.0)
     ) {
         self.mlContribution = mlContribution
         self.provenanceContribution = provenanceContribution
         self.metadataContribution = metadataContribution
         self.forensicContribution = forensicContribution
+        self.faceSwapContribution = faceSwapContribution
     }
 
     /// Get all contributions as an array for iteration
+    /// Face-swap is only included when available (faces detected)
     var allContributions: [(name: String, contribution: SignalContribution, weight: Double)] {
-        [
+        var contributions = [
             ("ML Detection", mlContribution, Self.weights.ml),
             ("Provenance", provenanceContribution, Self.weights.provenance),
             ("Metadata", metadataContribution, Self.weights.metadata),
             ("Forensics", forensicContribution, Self.weights.forensic),
         ]
+
+        // Only include face-swap when it was actually run (faces detected)
+        if faceSwapContribution.isAvailable {
+            let faceWeights = Self.weights(facesDetected: true)
+            contributions.append(("Face-Swap", faceSwapContribution, faceWeights.faceSwap))
+        }
+
+        return contributions
     }
 }
 
@@ -290,9 +326,18 @@ struct SignalWeights: Sendable {
     let provenance: Double
     let metadata: Double
     let forensic: Double
+    let faceSwap: Double
+
+    init(ml: Double, provenance: Double, metadata: Double, forensic: Double, faceSwap: Double = 0.0) {
+        self.ml = ml
+        self.provenance = provenance
+        self.metadata = metadata
+        self.forensic = forensic
+        self.faceSwap = faceSwap
+    }
 
     var total: Double {
-        ml + provenance + metadata + forensic
+        ml + provenance + metadata + forensic + faceSwap
     }
 }
 
@@ -328,7 +373,7 @@ extension OverallClassification {
 extension AggregatedResult: Codable {
     enum CodingKeys: String, CodingKey {
         case id, timestamp, overallScore, classification, isDefinitive, summary
-        case mlResult, provenanceResult, metadataResult, forensicResult
+        case mlResult, provenanceResult, metadataResult, forensicResult, faceSwapResult
         case signalBreakdown, totalAnalysisTimeMs
         case imageSourceType, imageSourceValue
         case imageWidth, imageHeight, fileSizeBytes
@@ -347,6 +392,7 @@ extension AggregatedResult: Codable {
         provenanceResult = try container.decodeIfPresent(ProvenanceResult.self, forKey: .provenanceResult)
         metadataResult = try container.decodeIfPresent(MetadataResult.self, forKey: .metadataResult)
         forensicResult = try container.decodeIfPresent(ForensicResult.self, forKey: .forensicResult)
+        faceSwapResult = try container.decodeIfPresent(FaceSwapResult.self, forKey: .faceSwapResult)
         signalBreakdown = try container.decode(SignalBreakdown.self, forKey: .signalBreakdown)
         totalAnalysisTimeMs = try container.decode(Int.self, forKey: .totalAnalysisTimeMs)
 
@@ -386,6 +432,7 @@ extension AggregatedResult: Codable {
         try container.encodeIfPresent(provenanceResult, forKey: .provenanceResult)
         try container.encodeIfPresent(metadataResult, forKey: .metadataResult)
         try container.encodeIfPresent(forensicResult, forKey: .forensicResult)
+        try container.encodeIfPresent(faceSwapResult, forKey: .faceSwapResult)
         try container.encode(signalBreakdown, forKey: .signalBreakdown)
         try container.encode(totalAnalysisTimeMs, forKey: .totalAnalysisTimeMs)
 

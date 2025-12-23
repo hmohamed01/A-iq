@@ -60,6 +60,7 @@ actor AnalysisOrchestrator {
     private let provenanceChecker: ProvenanceChecker
     private let metadataAnalyzer: MetadataAnalyzer
     private let forensicAnalyzer: ForensicAnalyzer
+    private let faceSwapDetector: FaceSwapDetector
     private let resultAggregator: ResultAggregator
 
     // MARK: State
@@ -73,12 +74,14 @@ actor AnalysisOrchestrator {
         provenanceChecker: ProvenanceChecker = ProvenanceChecker(),
         metadataAnalyzer: MetadataAnalyzer = MetadataAnalyzer(),
         forensicAnalyzer: ForensicAnalyzer = ForensicAnalyzer(),
+        faceSwapDetector: FaceSwapDetector = FaceSwapDetector(),
         resultAggregator: ResultAggregator = ResultAggregator()
     ) {
         self.mlDetector = mlDetector
         self.provenanceChecker = provenanceChecker
         self.metadataAnalyzer = metadataAnalyzer
         self.forensicAnalyzer = forensicAnalyzer
+        self.faceSwapDetector = faceSwapDetector
         self.resultAggregator = resultAggregator
     }
 
@@ -143,11 +146,16 @@ actor AnalysisOrchestrator {
             ? await forensicAnalyzer.analyze(image: cgImage, isLossless: isLossless)
             : nil as ForensicResult?
 
+        async let faceSwapResult = options.runFaceSwapDetection
+            ? await faceSwapDetector.analyze(image: cgImage)
+            : nil as FaceSwapResult?
+
         // Collect results
         let ml = await mlResult
         let provenance = await provenanceResult
         let metadata = await metadataResult
         let forensic = await forensicResult
+        let faceSwap = await faceSwapResult
 
         // Generate thumbnail
         let thumbnail = generateThumbnail(from: cgImage)
@@ -165,6 +173,7 @@ actor AnalysisOrchestrator {
             provenance: provenance,
             metadata: metadata,
             forensic: forensic,
+            faceSwap: faceSwap,
             analysisTimeMs: analysisTimeMs
         )
     }
@@ -333,7 +342,8 @@ actor AnalysisOrchestrator {
             mlContribution: .unavailable(weight: SignalBreakdown.weights.ml),
             provenanceContribution: .unavailable(weight: SignalBreakdown.weights.provenance),
             metadataContribution: .unavailable(weight: SignalBreakdown.weights.metadata),
-            forensicContribution: .unavailable(weight: SignalBreakdown.weights.forensic)
+            forensicContribution: .unavailable(weight: SignalBreakdown.weights.forensic),
+            faceSwapContribution: .unavailable(weight: 0.0)
         )
 
         return AggregatedResult(

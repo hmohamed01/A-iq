@@ -65,7 +65,7 @@ struct SignalBreakdownView: View {
 
             // Classification label
             if contribution.isAvailable {
-                Text(classificationLabel(for: contribution.rawScore))
+                Text(classificationLabel(for: contribution.rawScore, signalName: name))
                     .font(.caption)
                     .foregroundStyle(scoreColor(for: contribution.rawScore))
             } else {
@@ -87,7 +87,20 @@ struct SignalBreakdownView: View {
         }
     }
 
-    private func classificationLabel(for score: Double) -> String {
+    private func classificationLabel(for score: Double, signalName: String) -> String {
+        // Face-Swap uses Low/Medium/High instead of Authentic/Uncertain/AI-Generated
+        // because "Authentic" doesn't apply to fully AI-generated images
+        if signalName == "Face-Swap" {
+            if score < 0.30 {
+                return "Low"
+            } else if score < 0.70 {
+                return "Medium"
+            } else {
+                return "High"
+            }
+        }
+
+        // Default labels for other signals
         if score < 0.30 {
             return "Authentic"
         } else if score < 0.70 {
@@ -100,7 +113,7 @@ struct SignalBreakdownView: View {
 
 // MARK: - Preview
 
-#Preview {
+#Preview("Without Face-Swap") {
     let breakdown = SignalBreakdown(
         mlContribution: SignalContribution(rawScore: 0.75, weight: 0.4, isAvailable: true, confidence: .high),
         provenanceContribution: SignalContribution(rawScore: 0.5, weight: 0.3, isAvailable: false, confidence: .unavailable),
@@ -108,7 +121,23 @@ struct SignalBreakdownView: View {
         forensicContribution: SignalContribution(rawScore: 0.6, weight: 0.15, isAvailable: true, confidence: .medium)
     )
 
-    return SignalBreakdownView(breakdown: breakdown)
+    SignalBreakdownView(breakdown: breakdown)
+        .aiqCard()
+        .frame(width: 400)
+        .padding()
+        .background(AIQColors.paperWhite)
+}
+
+#Preview("With Face-Swap") {
+    let breakdown = SignalBreakdown(
+        mlContribution: SignalContribution(rawScore: 0.75, weight: 0.35, isAvailable: true, confidence: .high),
+        provenanceContribution: SignalContribution(rawScore: 0.5, weight: 0.25, isAvailable: true, confidence: .medium),
+        metadataContribution: SignalContribution(rawScore: 0.3, weight: 0.10, isAvailable: true, confidence: .medium),
+        forensicContribution: SignalContribution(rawScore: 0.6, weight: 0.10, isAvailable: true, confidence: .medium),
+        faceSwapContribution: SignalContribution(rawScore: 0.85, weight: 0.20, isAvailable: true, confidence: .high)
+    )
+
+    SignalBreakdownView(breakdown: breakdown)
         .aiqCard()
         .frame(width: 400)
         .padding()

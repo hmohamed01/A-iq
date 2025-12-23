@@ -94,6 +94,9 @@ struct AnalysisOptions: Sendable {
     /// Whether to perform forensic analysis (ELA)
     var runForensicAnalysis: Bool
 
+    /// Whether to run face-swap detection (always runs, returns neutral if no faces)
+    var runFaceSwapDetection: Bool
+
     /// Sensitivity threshold adjustment (-0.1 to +0.1)
     /// Positive values make detection more sensitive (more likely to flag as AI)
     var sensitivityAdjustment: Double
@@ -103,18 +106,20 @@ struct AnalysisOptions: Sendable {
         runProvenanceCheck: Bool = true,
         runMetadataAnalysis: Bool = true,
         runForensicAnalysis: Bool = true,
+        runFaceSwapDetection: Bool = true,
         sensitivityAdjustment: Double = 0.0
     ) {
         self.runMLDetection = runMLDetection
         self.runProvenanceCheck = runProvenanceCheck
         self.runMetadataAnalysis = runMetadataAnalysis
         self.runForensicAnalysis = runForensicAnalysis
+        self.runFaceSwapDetection = runFaceSwapDetection
         self.sensitivityAdjustment = sensitivityAdjustment.clamped(to: -0.1 ... 0.1)
     }
 
     /// Check if any detector is enabled
     var hasAnyDetectorEnabled: Bool {
-        runMLDetection || runProvenanceCheck || runMetadataAnalysis || runForensicAnalysis
+        runMLDetection || runProvenanceCheck || runMetadataAnalysis || runForensicAnalysis || runFaceSwapDetection
     }
 
     /// Default options with all detectors enabled
@@ -125,7 +130,8 @@ struct AnalysisOptions: Sendable {
         runMLDetection: true,
         runProvenanceCheck: false,
         runMetadataAnalysis: false,
-        runForensicAnalysis: false
+        runForensicAnalysis: false,
+        runFaceSwapDetection: false
     )
 }
 

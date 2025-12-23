@@ -124,6 +124,15 @@ enum EvidenceType: String, Sendable, Codable, CaseIterable {
     case forensicFrequencyAnomaly = "forensic_frequency_anomaly"
     case forensicSpectralSignature = "forensic_spectral_signature"
 
+    // Face-Swap Detection
+    case faceSwapFaceDetected = "faceswap_face_detected"
+    case faceSwapNoFaces = "faceswap_no_faces"
+    case faceSwapBoundaryInconsistency = "faceswap_boundary_inconsistency"
+    case faceSwapNoiseDiscontinuity = "faceswap_noise_discontinuity"
+    case faceSwapLightingInconsistency = "faceswap_lighting_inconsistency"
+    case faceSwapTextureAnomaly = "faceswap_texture_anomaly"
+    case faceSwapBlendingArtifact = "faceswap_blending_artifact"
+
     var category: String {
         switch self {
         case .mlClassification, .mlConfidenceScore:
@@ -140,6 +149,10 @@ enum EvidenceType: String, Sendable, Codable, CaseIterable {
              .forensicCompressionArtifact, .forensicClean,
              .forensicFrequencyAnomaly, .forensicSpectralSignature:
             return "Forensics"
+        case .faceSwapFaceDetected, .faceSwapNoFaces, .faceSwapBoundaryInconsistency,
+             .faceSwapNoiseDiscontinuity, .faceSwapLightingInconsistency,
+             .faceSwapTextureAnomaly, .faceSwapBlendingArtifact:
+            return "Face-Swap Detection"
         }
     }
 }

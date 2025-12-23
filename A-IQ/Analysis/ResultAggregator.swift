@@ -29,19 +29,25 @@ struct ResultAggregator {
         provenance: ProvenanceResult?,
         metadata: MetadataResult?,
         forensic: ForensicResult?,
+        faceSwap: FaceSwapResult?,
         analysisTimeMs: Int
     ) -> AggregatedResult {
+        // Determine if faces were detected for dynamic weight selection
+        let facesDetected = faceSwap?.facesDetected ?? false
+
         // Check for definitive proof first (C2PA override)
         // Implements: Req 6.3
         let isDefinitive = checkForDefinitiveProof(provenance)
 
-        // Compute weighted score
+        // Compute weighted score with dynamic weights based on face detection
         // Implements: Req 6.2
         let (score, breakdown) = computeWeightedScore(
             ml: ml,
             provenance: provenance,
             metadata: metadata,
-            forensic: forensic
+            forensic: forensic,
+            faceSwap: faceSwap,
+            facesDetected: facesDetected
         )
 
         // Check for corroborating signals before amplification
@@ -49,7 +55,8 @@ struct ResultAggregator {
             mlScore: ml?.score,
             provenance: provenance,
             metadata: metadata,
-            forensic: forensic
+            forensic: forensic,
+            faceSwap: faceSwap
         )
 
         // Check for contradicting signals (active disagreement, not just neutral)
@@ -57,7 +64,8 @@ struct ResultAggregator {
             mlScore: ml?.score,
             provenance: provenance,
             metadata: metadata,
-            forensic: forensic
+            forensic: forensic,
+            faceSwap: faceSwap
         )
 
         // Apply high-confidence ML amplification
@@ -93,6 +101,7 @@ struct ResultAggregator {
             provenanceResult: provenance,
             metadataResult: metadata,
             forensicResult: forensic,
+            faceSwapResult: faceSwap,
             signalBreakdown: breakdown,
             totalAnalysisTimeMs: analysisTimeMs
         )
@@ -115,15 +124,19 @@ struct ResultAggregator {
         ml: MLDetectionResult?,
         provenance: ProvenanceResult?,
         metadata: MetadataResult?,
-        forensic: ForensicResult?
+        forensic: ForensicResult?,
+        faceSwap: FaceSwapResult?,
+        facesDetected: Bool
     ) -> (score: Double, breakdown: SignalBreakdown) {
-        let baseWeights = SignalBreakdown.weights
+        // Use dynamic weights based on whether faces were detected
+        let baseWeights = SignalBreakdown.weights(facesDetected: facesDetected)
 
         // Determine which detectors are "decisive" (have strong signal, not neutral)
         let mlDecisive = isDecisiveResult(score: ml?.score, confidence: ml?.confidence, isSuccessful: ml?.isSuccessful ?? false)
         let provDecisive = isDecisiveResult(score: provenance?.score, confidence: provenance?.confidence, isSuccessful: provenance?.isSuccessful ?? false)
         let metaDecisive = isDecisiveResult(score: metadata?.score, confidence: metadata?.confidence, isSuccessful: metadata?.isSuccessful ?? false)
         let forensicDecisive = isDecisiveResult(score: forensic?.score, confidence: forensic?.confidence, isSuccessful: forensic?.isSuccessful ?? false)
+        let faceSwapDecisive = facesDetected && isDecisiveResult(score: faceSwap?.score, confidence: faceSwap?.confidence, isSuccessful: faceSwap?.isSuccessful ?? false)
 
         // Calculate effective weights with redistribution
         let effectiveWeights = calculateEffectiveWeights(
@@ -132,6 +145,8 @@ struct ResultAggregator {
             provDecisive: provDecisive,
             metaDecisive: metaDecisive,
             forensicDecisive: forensicDecisive,
+            faceSwapDecisive: faceSwapDecisive,
+            facesDetected: facesDetected,
             mlConfidence: ml?.confidence
         )
 
@@ -171,22 +186,39 @@ struct ResultAggregator {
             confidence: forensic?.confidence ?? .unavailable
         )
 
+        // Face-swap contribution (only meaningful when faces detected)
+        let faceSwapContrib = SignalContribution(
+            rawScore: faceSwap?.score ?? 0.5,
+            weight: effectiveWeights.faceSwap,
+            isAvailable: facesDetected && (faceSwap?.isSuccessful ?? false),
+            confidence: faceSwap?.confidence ?? .unavailable
+        )
+
         let breakdown = SignalBreakdown(
             mlContribution: mlContrib,
             provenanceContribution: provContrib,
             metadataContribution: metaContrib,
-            forensicContribution: forensicContrib
+            forensicContribution: forensicContrib,
+            faceSwapContribution: faceSwapContrib
         )
 
         // Calculate weighted sum using effective weights
-        let weightedSum = mlContrib.weightedScore +
+        var weightedSum = mlContrib.weightedScore +
             provContrib.weightedScore +
             metaContrib.weightedScore +
             forensicContrib.weightedScore
 
+        // Include face-swap in weighted sum when faces detected
+        if facesDetected {
+            weightedSum += faceSwapContrib.weightedScore
+        }
+
         // Normalize by total effective weight
-        let totalEffectiveWeight = effectiveWeights.ml + effectiveWeights.provenance +
+        var totalEffectiveWeight = effectiveWeights.ml + effectiveWeights.provenance +
             effectiveWeights.metadata + effectiveWeights.forensic
+        if facesDetected {
+            totalEffectiveWeight += effectiveWeights.faceSwap
+        }
         let normalizedScore = totalEffectiveWeight > 0 ? weightedSum / totalEffectiveWeight : 0.5
 
         return (normalizedScore, breakdown)
@@ -214,12 +246,15 @@ struct ResultAggregator {
         provDecisive: Bool,
         metaDecisive: Bool,
         forensicDecisive: Bool,
+        faceSwapDecisive: Bool,
+        facesDetected: Bool,
         mlConfidence: ResultConfidence?
     ) -> SignalWeights {
         var mlWeight = baseWeights.ml
         var provWeight = baseWeights.provenance
         var metaWeight = baseWeights.metadata
         var forensicWeight = baseWeights.forensic
+        var faceSwapWeight = baseWeights.faceSwap
 
         // Collect weight to redistribute from non-decisive detectors
         var weightToRedistribute = 0.0
@@ -246,6 +281,16 @@ struct ResultAggregator {
             decisiveCount += 1
         }
 
+        // Face-swap weight redistribution (only when faces detected)
+        if facesDetected {
+            if !faceSwapDecisive {
+                weightToRedistribute += faceSwapWeight
+                faceSwapWeight = 0.05
+            } else {
+                decisiveCount += 1
+            }
+        }
+
         // ML is always considered if successful
         if mlDecisive {
             decisiveCount += 1
@@ -266,12 +311,14 @@ struct ResultAggregator {
                 if provDecisive { provWeight += perDetectorBonus }
                 if metaDecisive { metaWeight += perDetectorBonus }
                 if forensicDecisive { forensicWeight += perDetectorBonus }
+                if facesDetected && faceSwapDecisive { faceSwapWeight += perDetectorBonus }
             } else if decisiveCount > 0 {
                 // Distribute evenly among decisive detectors
                 let perDetectorBonus = weightToRedistribute / Double(decisiveCount)
                 if provDecisive { provWeight += perDetectorBonus }
                 if metaDecisive { metaWeight += perDetectorBonus }
                 if forensicDecisive { forensicWeight += perDetectorBonus }
+                if facesDetected && faceSwapDecisive { faceSwapWeight += perDetectorBonus }
             }
         }
 
@@ -281,7 +328,13 @@ struct ResultAggregator {
             mlWeight += dominanceBoost
         }
 
-        return SignalWeights(ml: mlWeight, provenance: provWeight, metadata: metaWeight, forensic: forensicWeight)
+        return SignalWeights(
+            ml: mlWeight,
+            provenance: provWeight,
+            metadata: metaWeight,
+            forensic: forensicWeight,
+            faceSwap: faceSwapWeight
+        )
     }
 
     /// Adjust forensic score for AI detection context
@@ -314,7 +367,8 @@ struct ResultAggregator {
         mlScore: Double?,
         provenance: ProvenanceResult?,
         metadata: MetadataResult?,
-        forensic: ForensicResult?
+        forensic: ForensicResult?,
+        faceSwap: FaceSwapResult?
     ) -> Bool {
         guard let mlScore = mlScore else { return false }
 
@@ -352,6 +406,14 @@ struct ResultAggregator {
             if mlSaysAuthentic && forensic.score > 0.6 { corroboratingSignals += 1 }
         }
 
+        // Face-swap corroboration (when faces detected)
+        if let faceSwap = faceSwap, faceSwap.facesDetected, faceSwap.isSuccessful {
+            // Face-swap artifacts corroborate AI detection
+            if mlSaysAI && faceSwap.score > 0.6 { corroboratingSignals += 2 }
+            // Clean face analysis corroborates authentic
+            if mlSaysAuthentic && faceSwap.score < 0.4 { corroboratingSignals += 1 }
+        }
+
         return corroboratingSignals > 0
     }
 
@@ -361,7 +423,8 @@ struct ResultAggregator {
         mlScore: Double?,
         provenance: ProvenanceResult?,
         metadata: MetadataResult?,
-        forensic: ForensicResult?
+        forensic: ForensicResult?,
+        faceSwap: FaceSwapResult?
     ) -> Bool {
         guard let mlScore = mlScore else { return false }
 
@@ -392,6 +455,14 @@ struct ResultAggregator {
                 if let software = meta.softwareInfo, MetadataResult.isAISoftware(software) {
                     return true
                 }
+            }
+        }
+
+        // Face-swap contradiction (when faces detected)
+        if let faceSwap = faceSwap, faceSwap.facesDetected, faceSwap.isSuccessful {
+            // ML says authentic but face-swap detected high manipulation
+            if mlSaysAuthentic && faceSwap.score > 0.75 && faceSwap.confidence == .high {
+                return true
             }
         }
 

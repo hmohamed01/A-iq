@@ -5,14 +5,17 @@ A native macOS application that analyzes images to determine whether they are AI
 ## Features
 
 ### Multi-Signal Detection
-A-IQ combines four independent detection methods for reliable results:
+A-IQ combines five independent detection methods for reliable results:
 
-| Signal | Weight | Method |
-|--------|--------|--------|
-| **ML Detection** | 40% | SigLIP Vision Transformer neural network |
-| **Provenance** | 30% | C2PA content credentials verification |
-| **Metadata** | 15% | EXIF/IPTC anomaly analysis |
-| **Forensics** | 15% | Error Level Analysis (ELA) |
+| Signal | Default Weight | With Faces | Method |
+|--------|----------------|------------|--------|
+| **ML Detection** | 40% | 35% | SigLIP Vision Transformer neural network |
+| **Provenance** | 30% | 25% | C2PA content credentials verification |
+| **Metadata** | 15% | 10% | EXIF/IPTC anomaly analysis |
+| **Forensics** | 15% | 10% | Error Level Analysis (ELA) + FFT |
+| **Face-Swap** | — | 20% | Face boundary forensics (Vision) |
+
+*When faces are detected, weights automatically redistribute to include face-swap analysis.*
 
 ### Key Capabilities
 - **Privacy-First**: All processing happens locally. No images uploaded to any server.
@@ -57,12 +60,13 @@ A-IQ provides a confidence score from 0-100%:
 
 ### Signal Breakdown
 
-Each analysis shows weighted contributions from four independent detectors:
+Each analysis shows weighted contributions from five independent detectors:
 
-- **ML Detection (40%)**: SigLIP Vision Transformer trained on modern AI generators (DALL-E, Midjourney, Stable Diffusion, etc.)
-- **Provenance (30%)**: C2PA content credentials with deep parsing of AI assertions, ingredients, and provenance chains
-- **Metadata (15%)**: Analyzes EXIF/IPTC/XMP for 60+ AI software signatures, thumbnail mismatches, color profile anomalies, and embedded generation parameters
-- **Forensics (15%)**: Error Level Analysis and FFT frequency spectrum analysis detect compression inconsistencies and synthetic patterns
+- **ML Detection (40%/35%)**: SigLIP Vision Transformer trained on modern AI generators (DALL-E, Midjourney, Stable Diffusion, etc.)
+- **Provenance (30%/25%)**: C2PA content credentials with deep parsing of AI assertions, ingredients, and provenance chains
+- **Metadata (15%/10%)**: Analyzes EXIF/IPTC/XMP for 60+ AI software signatures, thumbnail mismatches, color profile anomalies, and embedded generation parameters
+- **Forensics (15%/10%)**: Error Level Analysis and FFT frequency spectrum analysis detect compression inconsistencies and synthetic patterns
+- **Face-Swap (—/20%)**: When faces are detected, analyzes boundary regions for deepfake/face-swap artifacts including compression edges, noise discontinuities, and lighting inconsistencies
 
 ## Supported Formats
 
@@ -136,13 +140,31 @@ Performs Error Level Analysis (ELA) on JPEG images:
 
 For PNG/lossless formats, noise pattern analysis detects variance inconsistencies across image blocks.
 
+### Face-Swap Detection
+When faces are detected in an image, A-IQ applies specialized forensic analysis to identify deepfake and face-swap manipulation:
+
+**Detection Methods:**
+- **Boundary ELA (40%)**: Analyzes compression artifacts at face blend edges where swapped faces meet the original image
+- **Noise Discontinuity (35%)**: Compares sensor noise patterns inside and outside face regions—mismatches indicate different source images
+- **Lighting Consistency (25%)**: Checks gradient direction alignment between face and surroundings to detect lighting mismatches
+
+**Per-Face Analysis:**
+Each detected face receives individual analysis with:
+- Composite score (0-100%)
+- Individual metric scores for each detection method
+- List of detected artifacts with severity (low/medium/high)
+- Face bounding box for visual reference
+
+**Dynamic Weighting:**
+When faces are present, the overall analysis weights redistribute to give face-swap detection 20% influence, as this signal is highly relevant for images containing people.
+
 ## Architecture
 
 ```
 A-IQ/
 ├── App/           # Application entry point and state
 ├── Analysis/      # Orchestration and result aggregation
-├── Detectors/     # ML, Provenance, Metadata, Forensic analyzers
+├── Detectors/     # ML, Provenance, Metadata, Forensic, FaceSwap analyzers
 ├── Models/        # Data structures and protocols
 ├── Views/         # SwiftUI interface
 ├── Input/         # Image acquisition (file, clipboard, drag-drop)

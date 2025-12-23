@@ -44,6 +44,10 @@
 		AAA00100 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AAA10100; };
 		AAA00102 /* AIDetector.mlmodelc in Resources */ = {isa = PBXBuildFile; fileRef = AAA10102; };
 		AAA00103 /* c2patool in Resources */ = {isa = PBXBuildFile; fileRef = AAA10103; };
+		AAA00104 /* DeepfakeDetector.mlmodelc in Resources */ = {isa = PBXBuildFile; fileRef = AAA10104; };
+		AAA00018 /* FaceSwapResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10018; };
+		AAA00044 /* FaceSwapDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10044; };
+		AAA00098 /* FaceSwapDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10098; };
 		BBB00001 /* ClassificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBB10001; };
 		BBB00002 /* ResultAggregatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBB10002; };
 		BBB00003 /* MetadataAnalyzerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBB10003; };
@@ -98,7 +102,11 @@
 		AAA10100 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AAA10102 /* AIDetector.mlmodelc */ = {isa = PBXFileReference; lastKnownFileType = folder; path = AIDetector.mlmodelc; sourceTree = "<group>"; };
 		AAA10103 /* c2patool */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = c2patool; sourceTree = "<group>"; };
+		AAA10104 /* DeepfakeDetector.mlmodelc */ = {isa = PBXFileReference; lastKnownFileType = folder; path = DeepfakeDetector.mlmodelc; sourceTree = "<group>"; };
 		AAA10101 /* A-IQ.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "A-IQ.entitlements"; sourceTree = "<group>"; };
+		AAA10018 /* FaceSwapResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceSwapResult.swift; sourceTree = "<group>"; };
+		AAA10044 /* FaceSwapDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceSwapDetector.swift; sourceTree = "<group>"; };
+		AAA10098 /* FaceSwapDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceSwapDetailView.swift; sourceTree = "<group>"; };
 		AAA20000 /* A-IQ.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "A-IQ.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BBB10001 /* ClassificationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassificationTests.swift; sourceTree = "<group>"; };
 		BBB10002 /* ResultAggregatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultAggregatorTests.swift; sourceTree = "<group>"; };
@@ -173,6 +181,7 @@
 				AAA10013 /* ProvenanceResult.swift */,
 				AAA10014 /* MetadataResult.swift */,
 				AAA10015 /* ForensicResult.swift */,
+				AAA10018 /* FaceSwapResult.swift */,
 				AAA10016 /* AggregatedResult.swift */,
 				AAA10017 /* AnalysisRecord.swift */,
 			);
@@ -203,6 +212,7 @@
 				AAA10041 /* ProvenanceChecker.swift */,
 				AAA10042 /* MetadataAnalyzer.swift */,
 				AAA10043 /* ForensicAnalyzer.swift */,
+				AAA10044 /* FaceSwapDetector.swift */,
 			);
 			path = Detectors;
 			sourceTree = "<group>";
@@ -250,6 +260,7 @@
 				AAA10100 /* Assets.xcassets */,
 				AAA10102 /* AIDetector.mlmodelc */,
 				AAA10103 /* c2patool */,
+				AAA10104 /* DeepfakeDetector.mlmodelc */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -263,6 +274,7 @@
 				AAA10093 /* ProvenanceChainView.swift */,
 				AAA10094 /* ELAOverlayView.swift */,
 				AAA10095 /* MetadataPanel.swift */,
+				AAA10098 /* FaceSwapDetailView.swift */,
 				AAA10096 /* WelcomeView.swift */,
 			);
 			path = Components;
@@ -363,6 +375,7 @@
 				AAA00100 /* Assets.xcassets in Resources */,
 				AAA00102 /* AIDetector.mlmodelc in Resources */,
 				AAA00103 /* c2patool in Resources */,
+				AAA00104 /* DeepfakeDetector.mlmodelc in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -414,6 +427,9 @@
 				AAA00095 /* MetadataPanel.swift in Sources */,
 				AAA00096 /* WelcomeView.swift in Sources */,
 				AAA00097 /* AIQDesignSystem.swift in Sources */,
+				AAA00018 /* FaceSwapResult.swift in Sources */,
+				AAA00044 /* FaceSwapDetector.swift in Sources */,
+				AAA00098 /* FaceSwapDetailView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
