@@ -9,8 +9,10 @@ struct ContentView: View {
     @EnvironmentObject var appState: AppState
     @Environment(\.modelContext) private var modelContext
 
-    /// Whether to show welcome dialog on launch (user preference)
+    /// Whether to show welcome dialog on subsequent launches (user preference)
     @AppStorage("showWelcomeOnLaunch") private var showWelcomeOnLaunch = true
+    /// Tracks whether the initial welcome has ever been shown (persists across installs)
+    @AppStorage("hasShownInitialWelcome") private var hasShownInitialWelcome = false
     @State private var showWelcome = false
 
     var body: some View {
@@ -22,7 +24,7 @@ struct ContentView: View {
                 HistoryView()
             }
         }
-        .frame(minWidth: 800, minHeight: 600)
+        .frame(minWidth: 1020, minHeight: 600)
         .toolbar {
             // Tab picker in principal position (centered, fixed)
             ToolbarItem(placement: .principal) {
@@ -58,7 +60,13 @@ struct ContentView: View {
             // Inject SwiftData ModelContext into AppState for history persistence
             appState.modelContext = modelContext
 
-            if showWelcomeOnLaunch {
+            // Show welcome on first-ever launch, or on subsequent launches if user prefers
+            if !hasShownInitialWelcome {
+                showWelcome = true
+                hasShownInitialWelcome = true
+                // Reset to default so checkbox appears checked on first launch
+                showWelcomeOnLaunch = true
+            } else if showWelcomeOnLaunch {
                 showWelcome = true
             }
         }

@@ -17,7 +17,7 @@ struct AnalysisView: View {
 
             // Right panel: Results
             resultsPanel
-                .frame(minWidth: 500)
+                .frame(minWidth: 620)
         }
         .background(AIQColors.paperWhite)
         .toolbar {
@@ -210,7 +210,7 @@ struct AnalysisView: View {
                     }
                 }
             }
-            .frame(minWidth: 280, idealWidth: 340)
+            .frame(minWidth: 240, idealWidth: 300)
 
             // Right: Detail view
             Group {
@@ -226,7 +226,7 @@ struct AnalysisView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
-            .frame(minWidth: 350)
+            .frame(minWidth: 380)
         }
     }
 

@@ -40,7 +40,7 @@ struct AIQApp: App {
         .commands {
             AppCommands(appState: appState)
         }
-        .defaultSize(width: 900, height: 700)
+        .defaultSize(width: 1200, height: 700)
 
         #if os(macOS)
             Settings {
