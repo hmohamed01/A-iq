@@ -35,6 +35,8 @@ struct AIQApp: App {
             alert.addButton(withTitle: "Quit")
             alert.runModal()
             NSApplication.shared.terminate(nil)
+            // terminate() returns to run loop; fatalError satisfies compiler and acts as fallback
+            fatalError("Database initialization failed - application terminating")
         }
     }
 

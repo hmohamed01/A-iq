@@ -19,6 +19,7 @@
 		AAA00015 /* ForensicResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10015; };
 		AAA00016 /* AggregatedResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10016; };
 		AAA00017 /* AnalysisRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10017; };
+		AAA00019 /* AnalysisConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10019; };
 		AAA00020 /* ImageInputHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10020; };
 		AAA00030 /* AnalysisOrchestrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10030; };
 		AAA00031 /* ResultAggregator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA10031; };
@@ -77,6 +78,7 @@
 		AAA10015 /* ForensicResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForensicResult.swift; sourceTree = "<group>"; };
 		AAA10016 /* AggregatedResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AggregatedResult.swift; sourceTree = "<group>"; };
 		AAA10017 /* AnalysisRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisRecord.swift; sourceTree = "<group>"; };
+		AAA10019 /* AnalysisConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisConstants.swift; sourceTree = "<group>"; };
 		AAA10020 /* ImageInputHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageInputHandler.swift; sourceTree = "<group>"; };
 		AAA10030 /* AnalysisOrchestrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisOrchestrator.swift; sourceTree = "<group>"; };
 		AAA10031 /* ResultAggregator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultAggregator.swift; sourceTree = "<group>"; };
@@ -184,6 +186,7 @@
 				AAA10018 /* FaceSwapResult.swift */,
 				AAA10016 /* AggregatedResult.swift */,
 				AAA10017 /* AnalysisRecord.swift */,
+				AAA10019 /* AnalysisConstants.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -405,6 +408,7 @@
 				AAA00015 /* ForensicResult.swift in Sources */,
 				AAA00016 /* AggregatedResult.swift in Sources */,
 				AAA00017 /* AnalysisRecord.swift in Sources */,
+				AAA00019 /* AnalysisConstants.swift in Sources */,
 				AAA00020 /* ImageInputHandler.swift in Sources */,
 				AAA00030 /* AnalysisOrchestrator.swift in Sources */,
 				AAA00031 /* ResultAggregator.swift in Sources */,
