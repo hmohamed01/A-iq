@@ -97,30 +97,35 @@ final class AppState: ObservableObject {
 
         let options = createAnalysisOptions()
 
-        // Check for cancellation before starting
-        guard !Task.isCancelled else {
+        do {
+            // Check for cancellation before starting
+            try Task.checkCancellation()
+
+            // Perform analysis with proper error handling
+            currentAnalysis = await orchestrator.analyze(source, options: options)
+
+            // Check for cancellation after analysis
+            try Task.checkCancellation()
+
+            // Save to history
+            if let result = currentAnalysis, let context = modelContext {
+                await saveToHistory(result: result, context: context)
+            }
+
+            isAnalyzing = false
+            analysisProgress = 1.0
+            statusMessage = "Analysis complete"
+        } catch is CancellationError {
             isAnalyzing = false
             statusMessage = "Analysis cancelled"
-            return
-        }
-
-        currentAnalysis = await orchestrator.analyze(source, options: options)
-
-        // Check for cancellation after analysis
-        guard !Task.isCancelled else {
+            errorMessage = nil // Don't show error for cancellation
+        } catch {
             isAnalyzing = false
-            statusMessage = "Analysis cancelled"
-            return
+            analysisProgress = 0
+            errorMessage = error.localizedDescription
+            statusMessage = "Analysis failed: \(error.localizedDescription)"
+            storageLogger.error("Analysis failed: \(error.localizedDescription)")
         }
-
-        // Save to history
-        if let result = currentAnalysis, let context = modelContext {
-            await saveToHistory(result: result, context: context)
-        }
-
-        isAnalyzing = false
-        analysisProgress = 1.0
-        statusMessage = "Analysis complete"
     }
 
     /// Analyze image from file URL
@@ -158,30 +163,50 @@ final class AppState: ObservableObject {
 
         let options = createAnalysisOptions()
         var completedCount = 0
+        var failedCount = 0
 
-        for await result in await orchestrator.analyzeBatch(sources, options: options) {
-            // Check for cancellation
-            guard !Task.isCancelled else {
-                isAnalyzing = false
-                batchQueue = []
-                statusMessage = "Batch analysis cancelled"
-                return
+        do {
+            for await result in await orchestrator.analyzeBatch(sources, options: options) {
+                // Check for cancellation
+                try Task.checkCancellation()
+
+                completedCount += 1
+                batchResults.append(result)
+                analysisProgress = Double(completedCount) / Double(sources.count)
+                
+                // Update status with failure count if any
+                if failedCount > 0 {
+                    statusMessage = "Analyzed \(completedCount) of \(sources.count) images (\(failedCount) failed)"
+                } else {
+                    statusMessage = "Analyzed \(completedCount) of \(sources.count) images"
+                }
+
+                // Save to history (errors are logged but don't stop batch)
+                if let context = modelContext {
+                    await saveToHistory(result: result, context: context)
+                }
             }
 
-            completedCount += 1
-            batchResults.append(result)
-            analysisProgress = Double(completedCount) / Double(sources.count)
-            statusMessage = "Analyzed \(completedCount) of \(sources.count) images"
-
-            // Save to history
-            if let context = modelContext {
-                await saveToHistory(result: result, context: context)
+            isAnalyzing = false
+            batchQueue = []
+            if failedCount > 0 {
+                statusMessage = "Batch analysis complete (\(failedCount) failed)"
+                errorMessage = "Some images failed to analyze. Check individual results for details."
+            } else {
+                statusMessage = "Batch analysis complete"
             }
+        } catch is CancellationError {
+            isAnalyzing = false
+            batchQueue = []
+            statusMessage = "Batch analysis cancelled"
+            errorMessage = nil
+        } catch {
+            isAnalyzing = false
+            batchQueue = []
+            errorMessage = error.localizedDescription
+            statusMessage = "Batch analysis failed: \(error.localizedDescription)"
+            storageLogger.error("Batch analysis failed: \(error.localizedDescription)")
         }
-
-        isAnalyzing = false
-        batchQueue = []
-        statusMessage = "Batch analysis complete"
     }
 
     /// Analyze folder of images
@@ -252,6 +277,7 @@ final class AppState: ObservableObject {
         isAnalyzing = false
         batchQueue = []
         statusMessage = "Analysis cancelled"
+        errorMessage = nil // Clear any error messages on cancellation
     }
 
     /// Delete all analysis history

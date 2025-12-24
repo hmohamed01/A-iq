@@ -27,7 +27,14 @@ struct AIQApp: App {
             )
             modelContainer = try ModelContainer(for: schema, configurations: [configuration])
         } catch {
-            fatalError("Failed to initialize SwiftData: \(error)")
+            // Show error dialog and terminate gracefully
+            let alert = NSAlert()
+            alert.messageText = "Failed to Initialize Database"
+            alert.informativeText = "A-IQ could not initialize its database. The application will now quit.\n\nError: \(error.localizedDescription)"
+            alert.alertStyle = .critical
+            alert.addButton(withTitle: "Quit")
+            alert.runModal()
+            NSApplication.shared.terminate(nil)
         }
     }
 

@@ -46,13 +46,13 @@ actor AnalysisOrchestrator {
     // MARK: Constants
 
     /// Maximum concurrent analyses
-    static let maxConcurrentAnalyses = 4
+    static let maxConcurrentAnalyses = AnalysisConstants.maxConcurrentAnalyses
 
     /// Memory threshold for throttling (2GB)
-    static let memoryThresholdBytes: Int = 2_000_000_000
+    static let memoryThresholdBytes: Int = AnalysisConstants.memoryThresholdBytes
 
     /// Thumbnail size for results
-    static let thumbnailSize = CGSize(width: 256, height: 256)
+    static let thumbnailSize = AnalysisConstants.thumbnailSize
 
     // MARK: Dependencies
 
@@ -111,7 +111,7 @@ actor AnalysisOrchestrator {
         // Also check memory constraint with brief delay if needed
         if isMemoryConstrained() {
             // Brief pause to allow memory cleanup
-            try? await Task.sleep(for: .milliseconds(500))
+            try? await Task.sleep(for: .milliseconds(AnalysisConstants.memoryConstrainedDelayMs))
         }
 
         defer {

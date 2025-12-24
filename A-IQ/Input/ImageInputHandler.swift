@@ -31,23 +31,33 @@ actor ImageInputHandler {
     /// Validate a file URL and create ImageSource
     /// Implements: Req 1.1, 1.2
     nonisolated func validateFile(at url: URL) throws -> ImageSource {
+        // Resolve symlinks to prevent path traversal attacks
+        let resolvedURL = url.resolvingSymlinksInPath()
+        
         // Check file exists
-        guard FileManager.default.fileExists(atPath: url.path) else {
-            throw ImageInputError.fileNotFound(url.path)
+        guard FileManager.default.fileExists(atPath: resolvedURL.path) else {
+            throw ImageInputError.fileNotFound(resolvedURL.path)
         }
 
         // Check extension
-        let ext = url.pathExtension.lowercased()
+        let ext = resolvedURL.pathExtension.lowercased()
         guard Self.supportedExtensions.contains(ext) else {
             throw ImageInputError.unsupportedFormat(ext)
         }
 
         // Check readability
-        guard FileManager.default.isReadableFile(atPath: url.path) else {
-            throw ImageInputError.fileNotReadable(url.path)
+        guard FileManager.default.isReadableFile(atPath: resolvedURL.path) else {
+            throw ImageInputError.fileNotReadable(resolvedURL.path)
         }
 
-        return .fileURL(url)
+        // Check file size
+        if let attrs = try? FileManager.default.attributesOfItem(atPath: resolvedURL.path),
+           let size = attrs[.size] as? Int,
+           size > Self.maxFileSizeBytes {
+            throw ImageInputError.fileTooLarge(size)
+        }
+
+        return .fileURL(resolvedURL)
     }
 
     /// Check if file requires large file confirmation
@@ -111,6 +121,7 @@ actor ImageInputHandler {
 
     /// Extract image from clipboard
     /// Implements: Req 1.5
+    /// Note: Must be called from main thread due to NSPasteboard requirements
     @MainActor
     func extractFromClipboard() throws -> ImageSource {
         let pasteboard = NSPasteboard.general

@@ -25,6 +25,22 @@ A-IQ combines five independent detection methods for reliable results:
 - **Export Reports**: Generate PDF or JSON reports of findings.
 - **History**: Browse and search past analysis results.
 
+## Recent Improvements (December 2024)
+
+### Critical Fixes
+1. **Graceful Error Handling**: Replaced fatal errors with user-friendly dialogs
+2. **Complete Menu Implementation**: All menu commands now functional
+3. **Proper Task Cancellation**: Analysis can be cancelled without errors
+4. **Comprehensive Error Handling**: All errors are caught and displayed appropriately
+5. **Input Validation**: File size limits and security improvements
+6. **Constants Extraction**: Centralized configuration for easier maintenance
+
+### Code Quality
+- Centralized constants in `AnalysisConstants.swift`
+- Improved error handling patterns
+- Better security with path validation
+- Enhanced user feedback
+
 ## Requirements
 
 - macOS 14.0 (Sonoma) or later
@@ -249,6 +265,44 @@ A-IQ is designed with privacy as a core principle:
 - JPEG-compressed thumbnails (70% quality)
 - Full results stored as JSON
 
+## Error Handling
+
+The application includes comprehensive error handling:
+
+- **Database Errors**: Graceful initialization failure handling
+- **File Errors**: Clear messages for invalid files, sizes, formats
+- **Analysis Errors**: Individual detector failures don't stop analysis
+- **Cancellation**: Proper cleanup when analysis is cancelled
+- **User Feedback**: All errors shown with actionable messages
+
+## Security
+
+- **Path Validation**: Symlink resolution prevents path traversal
+- **File Size Limits**: 100MB maximum file size
+- **Input Sanitization**: All file paths validated before processing
+- **Sandboxing**: External tools run with proper isolation
+
+## Configuration
+
+### Settings
+
+Access via A-IQ → Settings or ⌘,:
+
+- **Sensitivity Threshold**: Adjust detection sensitivity (0.0-1.0)
+- **Export Format**: Default format for reports (PDF/JSON)
+- **Auto-Analyze on Drop**: Automatically analyze dropped images
+- **Store Thumbnails**: Enable/disable thumbnail storage in history
+- **History Retention**: Days to keep history (0 = forever)
+
+### Constants
+
+Key configuration values are centralized in `Models/AnalysisConstants.swift`:
+
+- `maxConcurrentAnalyses`: Maximum parallel analyses (default: 4)
+- `memoryThresholdBytes`: Memory limit for throttling (default: 2GB)
+- `likelyAuthenticThreshold`: Score threshold for authentic (default: 0.30)
+- `likelyAIGeneratedThreshold`: Score threshold for AI (default: 0.70)
+
 ## License
 
 MIT License - See LICENSE file for details.
@@ -262,4 +316,19 @@ MIT License - See LICENSE file for details.
 
 ## Contributing
 
-Contributions are welcome! Please read CONTRIBUTING.md for guidelines.
+Contributions are welcome! When contributing, please:
+
+1. Follow existing code style and patterns
+2. Add error handling for new features
+3. Update documentation for user-facing changes
+4. Test error scenarios and edge cases
+5. Use centralized constants for configuration values
+
+## Support
+
+For issues, feature requests, or questions, please refer to the project's issue tracker or contact the maintainers.
+
+---
+
+**Version**: 2.0.0  
+**Last Updated**: December 2024

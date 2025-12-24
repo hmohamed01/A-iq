@@ -81,24 +81,56 @@ struct AppCommands: Commands {
     // MARK: Command Actions
 
     private func openFile() {
-        // TODO: Implement with ImageInputHandler
-        // Task {
-        //     let urls = await appState.inputHandler.presentFilePicker(allowsMultiple: true)
-        //     let sources = urls.compactMap { try? appState.inputHandler.validateFile(at: $0) }
-        //     await appState.analyzeImages(sources)
-        // }
+        Task {
+            await appState.openFilePicker()
+        }
     }
 
     private func openFolder() {
-        // TODO: Implement with ImageInputHandler
+        Task {
+            await appState.openFolderPicker()
+        }
     }
 
     private func pasteFromClipboard() {
-        // TODO: Implement with ImageInputHandler
+        appState.startAnalyzeClipboard()
     }
 
     private func exportReport() {
-        // TODO: Implement with ReportGenerator
+        Task { @MainActor in
+            guard let result = appState.currentAnalysis else {
+                // Show error if no result available
+                let alert = NSAlert()
+                alert.messageText = "No Analysis Result"
+                alert.informativeText = "Please analyze an image before exporting a report."
+                alert.alertStyle = .informational
+                alert.addButton(withTitle: "OK")
+                alert.runModal()
+                return
+            }
+            
+            let generator = ReportGenerator()
+            let format = appState.settingsManager.defaultExportFormat
+            let filename = result.imageSource.displayName
+                .replacingOccurrences(of: "/", with: "_")
+                .replacingOccurrences(of: "\\", with: "_")
+            let suggestedName = "\(filename)_analysis.\(format.fileExtension)"
+            
+            let success = await generator.exportWithDialog(
+                result,
+                format: format,
+                suggestedFilename: suggestedName
+            )
+            
+            if !success {
+                let alert = NSAlert()
+                alert.messageText = "Export Failed"
+                alert.informativeText = "Could not export the analysis report. Please try again."
+                alert.alertStyle = .warning
+                alert.addButton(withTitle: "OK")
+                alert.runModal()
+            }
+        }
     }
 
     private func showAboutWindow() {

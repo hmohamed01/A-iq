@@ -496,13 +496,7 @@ actor MetadataAnalyzer {
 
             for (brand, patterns) in cameraProfilePatterns {
                 if cameraLower.contains(brand) {
-                    // Camera is from this brand
-                    let hasMatchingProfile = patterns.contains { profileLower.contains($0) }
-                    let hasCameraProfile = patterns.contains { profileLower.contains($0) }
-                        || profileLower.contains("camera")
-                        || profileLower.contains("embedded")
-
-                    // If profile mentions a different camera brand, suspicious
+                    // Camera is from this brand - check if profile mentions a different brand
                     for (otherBrand, otherPatterns) in cameraProfilePatterns where otherBrand != brand {
                         if otherPatterns.contains(where: { profileLower.contains($0) }) {
                             return MetadataAnomaly(

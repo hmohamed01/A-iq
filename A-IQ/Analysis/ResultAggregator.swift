@@ -150,32 +150,15 @@ struct ResultAggregator {
             mlConfidence: ml?.confidence
         )
 
-        // Build contributions with effective weights
-        let mlContrib = SignalContribution(
-            rawScore: ml?.score ?? 0.5,
-            weight: effectiveWeights.ml,
-            isAvailable: ml?.isSuccessful ?? false,
-            confidence: ml?.confidence ?? .unavailable
-        )
-
-        let provContrib = SignalContribution(
-            rawScore: provenance?.score ?? 0.5,
-            weight: effectiveWeights.provenance,
-            isAvailable: provenance?.isSuccessful ?? false,
-            confidence: provenance?.confidence ?? .unavailable
-        )
-
-        let metaContrib = SignalContribution(
-            rawScore: metadata?.score ?? 0.5,
-            weight: effectiveWeights.metadata,
-            isAvailable: metadata?.isSuccessful ?? false,
-            confidence: metadata?.confidence ?? .unavailable
-        )
+        // Build contributions with effective weights using helper
+        let mlContrib = buildContribution(from: ml, weight: effectiveWeights.ml)
+        let provContrib = buildContribution(from: provenance, weight: effectiveWeights.provenance)
+        let metaContrib = buildContribution(from: metadata, weight: effectiveWeights.metadata)
 
         // Apply forensic score adjustment for AI detection
         let adjustedForensicScore = adjustForensicScoreForAI(
-            forensicScore: forensic?.score ?? 0.5,
-            mlScore: ml?.score ?? 0.5,
+            forensicScore: forensic?.score ?? AnalysisConstants.neutralScore,
+            mlScore: ml?.score ?? AnalysisConstants.neutralScore,
             mlConfidence: ml?.confidence ?? .unavailable
         )
 
@@ -188,7 +171,7 @@ struct ResultAggregator {
 
         // Face-swap contribution (only meaningful when faces detected)
         let faceSwapContrib = SignalContribution(
-            rawScore: faceSwap?.score ?? 0.5,
+            rawScore: faceSwap?.score ?? AnalysisConstants.neutralScore,
             weight: effectiveWeights.faceSwap,
             isAvailable: facesDetected && (faceSwap?.isSuccessful ?? false),
             confidence: faceSwap?.confidence ?? .unavailable
@@ -233,9 +216,9 @@ struct ResultAggregator {
         }
         // A result is decisive if:
         // 1. Confidence is not low/unavailable AND
-        // 2. Score is not neutral (significantly away from 0.5)
+        // 2. Score is not neutral (significantly away from neutral)
         let isConfident = confidence == .high || confidence == .medium
-        let isNonNeutral = abs(score - 0.5) > 0.1 // More than 10% away from neutral
+        let isNonNeutral = abs(score - AnalysisConstants.neutralScore) > AnalysisConstants.decisiveThreshold
         return isConfident && isNonNeutral
     }
 
@@ -262,21 +245,21 @@ struct ResultAggregator {
 
         if !provDecisive {
             weightToRedistribute += provWeight
-            provWeight = 0.05 // Keep minimal weight for display
+            provWeight = AnalysisConstants.minDisplayWeight
         } else {
             decisiveCount += 1
         }
 
         if !metaDecisive {
             weightToRedistribute += metaWeight
-            metaWeight = 0.05
+            metaWeight = AnalysisConstants.minDisplayWeight
         } else {
             decisiveCount += 1
         }
 
         if !forensicDecisive {
             weightToRedistribute += forensicWeight
-            forensicWeight = 0.05
+            forensicWeight = AnalysisConstants.minDisplayWeight
         } else {
             decisiveCount += 1
         }
@@ -285,7 +268,7 @@ struct ResultAggregator {
         if facesDetected {
             if !faceSwapDecisive {
                 weightToRedistribute += faceSwapWeight
-                faceSwapWeight = 0.05
+                faceSwapWeight = AnalysisConstants.minDisplayWeight
             } else {
                 decisiveCount += 1
             }
@@ -300,11 +283,11 @@ struct ResultAggregator {
         if weightToRedistribute > 0 {
             if mlDecisive {
                 // ML gets the lion's share of redistributed weight
-                let mlBonus = weightToRedistribute * 0.7
+                let mlBonus = weightToRedistribute * AnalysisConstants.mlRedistributionShare
                 mlWeight += mlBonus
 
                 // Remaining goes to other decisive detectors
-                let remainingBonus = weightToRedistribute * 0.3
+                let remainingBonus = weightToRedistribute * (1.0 - AnalysisConstants.mlRedistributionShare)
                 let otherDecisiveCount = max(decisiveCount - 1, 1)
                 let perDetectorBonus = remainingBonus / Double(otherDecisiveCount)
 
@@ -324,8 +307,7 @@ struct ResultAggregator {
 
         // ML dominance boost: when ML has very high confidence, boost its weight further
         if let confidence = mlConfidence, confidence == .high {
-            let dominanceBoost = 0.1
-            mlWeight += dominanceBoost
+            mlWeight += AnalysisConstants.mlDominanceBoost
         }
 
         return SignalWeights(
@@ -501,9 +483,9 @@ struct ResultAggregator {
         // we trust ML much more than before (neutral signals = no opinion)
         let amplificationFactor: Double
         if hasCorroboration {
-            amplificationFactor = 1.0  // Full trust
+            amplificationFactor = AnalysisConstants.mlAmplificationWithCorroboration
         } else {
-            amplificationFactor = 0.85  // High trust (was 0.5, now more generous)
+            amplificationFactor = AnalysisConstants.mlAmplificationWithoutCorroboration
         }
 
         // For extremely high ML scores (>=99%)
@@ -596,6 +578,19 @@ struct ResultAggregator {
         }
 
         return baseScore
+    }
+
+    // MARK: Helper Methods
+
+    /// Build a SignalContribution from an optional detection result
+    /// Provides consistent handling of nil results with neutral defaults
+    private func buildContribution<T: DetectionResult>(from result: T?, weight: Double) -> SignalContribution {
+        SignalContribution(
+            rawScore: result?.score ?? AnalysisConstants.neutralScore,
+            weight: weight,
+            isAvailable: result?.isSuccessful ?? false,
+            confidence: result?.confidence ?? .unavailable
+        )
     }
 
     // MARK: Summary Generation
