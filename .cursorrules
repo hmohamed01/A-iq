@@ -1,0 +1,86 @@
+# A-IQ Project Rules
+
+## Code Style
+
+- Swift 5.9+ with strict concurrency checking
+- Actors for all shared state (detectors, orchestrator, stores)
+- `@MainActor` only for UI-bound classes (AppState, SettingsManager)
+- Use `async let` for parallel operations, task groups for dynamic concurrency
+- OSLog for all logging (subsystem: "com.aiq.app")
+
+## Architecture Patterns
+
+- Detectors conform to `DetectionResult` protocol (score 0-1, confidence, evidence)
+- Use `AnalysisConstants` for all magic numbers and thresholds
+- Timeout enforcement via task group race pattern
+- Error handling: catch and log, never crash in production paths
+
+## When Making Changes
+
+### Do
+- Add constants to `Models/AnalysisConstants.swift`
+- Use `buildContribution()` helper for optional DetectionResult handling
+- Update `CLAUDE.md` for substantial architectural changes
+- Handle cancellation with `Task.checkCancellation()`
+- Validate file inputs (size limits, symlink resolution)
+
+### Don't
+- Use `fatalError()` except as unreachable code marker
+- Add hardcoded numeric values (use AnalysisConstants)
+- Block the main thread with synchronous operations
+- Ignore detector errors (log and continue with neutral score)
+
+## File Conventions
+
+| Directory | Purpose |
+|-----------|---------|
+| `App/` | Entry point, state, commands |
+| `Analysis/` | Orchestration, aggregation |
+| `Detectors/` | ML, Provenance, Metadata, Forensic, FaceSwap |
+| `Models/` | Data types, protocols, constants |
+| `Views/` | SwiftUI components |
+| `Input/` | File handling, clipboard, drag-drop |
+
+## Key Types Reference
+
+```swift
+// Detection result protocol
+protocol DetectionResult {
+    var score: Double { get }           // 0 = authentic, 1 = AI
+    var confidence: ResultConfidence { get }
+    var evidence: [Evidence] { get }
+}
+
+// Classification thresholds
+< 0.30 → likelyAuthentic
+0.30-0.70 → uncertain  
+> 0.70 → likelyAIGenerated
+```
+
+## Testing Considerations
+
+- AppState supports dependency injection via init parameters
+- Use mock detectors returning fixed results for unit tests
+- Test cancellation scenarios explicitly
+- Verify error handling paths return neutral scores (0.5)
+
+## Common Tasks
+
+### Adding a new constant
+1. Add to `AnalysisConstants.swift`
+2. Reference as `AnalysisConstants.yourConstant`
+3. Document in CLAUDE.md constants table
+
+### Adding a new detector
+1. Create actor in `Detectors/`
+2. Conform to `DetectionResult` protocol
+3. Add to `AnalysisOrchestrator` parallel execution
+4. Update `ResultAggregator` weights
+5. Update `SignalBreakdown` struct
+
+### Modifying scoring logic
+1. Changes go in `ResultAggregator.swift`
+2. Update threshold constants if needed
+3. Test with known AI and authentic images
+4. Document weight changes in CLAUDE.md
+
