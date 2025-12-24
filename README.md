@@ -25,21 +25,24 @@ A-IQ combines five independent detection methods for reliable results:
 - **Export Reports**: Generate PDF or JSON reports of findings.
 - **History**: Browse and search past analysis results.
 
-## Recent Improvements (December 2024)
+## Recent Improvements (v1.1 - December 2024)
 
 ### Critical Fixes
 1. **Graceful Error Handling**: Replaced fatal errors with user-friendly dialogs
 2. **Complete Menu Implementation**: All menu commands now functional
 3. **Proper Task Cancellation**: Analysis can be cancelled without errors
 4. **Comprehensive Error Handling**: All errors are caught and displayed appropriately
-5. **Input Validation**: File size limits and security improvements
+5. **Input Validation**: File size limits (100MB) and security improvements
 6. **Constants Extraction**: Centralized configuration for easier maintenance
 
-### Code Quality
+### Code Quality (v1.1)
 - Centralized constants in `AnalysisConstants.swift`
 - Improved error handling patterns
-- Better security with path validation
+- Better security with path validation and symlink resolution
 - Enhanced user feedback
+- Removed dead code (unused variables in MetadataAnalyzer)
+- Added helper methods for consistent optional handling in ResultAggregator
+- Standardized use of `AnalysisConstants.neutralScore` for default values
 
 ## Requirements
 
@@ -330,5 +333,5 @@ For issues, feature requests, or questions, please refer to the project's issue 
 
 ---
 
-**Version**: 2.0.0  
+**Version**: 1.1  
 **Last Updated**: December 2024
