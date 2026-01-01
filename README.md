@@ -239,9 +239,14 @@ When A-IQ detects faces, it activates a dedicated **deepfake detection neural ne
 
 ## Installation
 
-1. Download the latest release from the [Releases](https://github.com/hmohamed01/A-IQ/releases) page
-2. Move A-IQ.app to your Applications folder
-3. Launch A-IQ
+### For End Users
+
+1. Download `A-IQ.dmg` from the [Releases](https://github.com/hmohamed01/A-IQ/releases) page
+2. Open the DMG and drag A-IQ.app to your Applications folder
+3. Right-click A-IQ.app → "Open" on first launch (macOS security)
+4. Launch normally afterward
+
+**Note**: The DMG contains all required models and resources. No additional downloads needed.
 
 ## Architecture
 
@@ -289,55 +294,67 @@ A-IQ/
 
 ## Building from Source
 
+### For Developers
+
+**Important**: The repository does not include large binary files (ML models, c2patool). You must download these separately before building.
+
 ### Prerequisites
 
 - Xcode 15.0 or later
 - macOS 14.0 SDK
+- Git
 
-### Build Steps
+### Step 1: Clone Repository
 
 ```bash
-# Clone the repository
 git clone https://github.com/hmohamed01/A-IQ.git
 cd A-IQ
-
-# Build via command line
-xcodebuild build -scheme A-IQ -destination 'platform=macOS'
-
-# Or open in Xcode
-open A-IQ.xcodeproj
 ```
 
-### Required Resources
+### Step 2: Download Required Resources
 
-The following files are required but not included in the repository:
+The following files are **required** but not included in the repository (too large for GitHub):
 
-1. **ML Model** (`AIDetector.mlmodelc`)
-   - SigLIP Vision Transformer trained for AI detection (164MB)
-   - Place in `A-IQ/Resources/`
+1. **ML Model** (`AIDetector.mlmodelc`) - 164MB
+   - SigLIP Vision Transformer for AI detection
+   - Place in `A-IQ/Resources/AIDetector.mlmodelc`
 
-2. **Deepfake Model** (`DeepfakeDetector.mlmodelc`)
-   - SigLIP Vision Transformer for face-swap/deepfake detection (164MB)
-   - Source: prithivMLmods/deepfake-detector-model-v1 (Hugging Face)
-   - Place in `A-IQ/Resources/`
+2. **Deepfake Model** (`DeepfakeDetector.mlmodelc`) - 164MB
+   - SigLIP Vision Transformer for face-swap detection
+   - Source: [prithivMLmods/deepfake-detector-model-v1](https://huggingface.co/prithivMLmods/deepfake-detector-model-v1)
+   - Place in `A-IQ/Resources/DeepfakeDetector.mlmodelc`
 
-3. **c2patool** binary
+3. **c2patool** binary - 34MB
    - Download from [C2PA releases](https://github.com/contentauth/c2patool/releases)
-   - Place in `A-IQ/Resources/`
-   - Ensure execute permissions: `chmod +x c2patool`
+   - Place in `A-IQ/Resources/c2patool`
+   - Set executable: `chmod +x A-IQ/Resources/c2patool`
 
 4. **Trust List** (`trust_list.json`)
    - JSON file listing trusted C2PA signers
-   - Place in `A-IQ/Resources/`
+   - Place in `A-IQ/Resources/trust_list.json`
 
-### Creating DMG Installer
+### Step 3: Build the App
+
+**Command Line:**
+```bash
+xcodebuild build -scheme A-IQ -configuration Release -destination 'platform=macOS'
+```
+
+**Xcode:**
+```bash
+open A-IQ.xcodeproj
+# Then Product → Build (⌘B)
+```
+
+The built app will be in `build/Build/Products/Release/A-IQ.app`
+
+### Step 4: Create DMG Installer (Optional)
 
 ```bash
-# Run the packaging script
 bash scripts/package.sh
 ```
 
-The DMG will be created in `dist/A-IQ.dmg` with styled background and Applications symlink.
+This creates `dist/A-IQ.dmg` with styled background and Applications symlink.
 
 ## Configuration
 
