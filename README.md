@@ -72,7 +72,7 @@ Each analysis includes:
 |-----------------|------------------|------------------|
 | ![Results View](Screenshots/2025-12-24_15-03-14.png) | ![Signal Breakdown](Screenshots/2025-12-24_15-03-39.png) | ![Metadata Panel](Screenshots/2025-12-24_15-03-47.png) |
 
-| Face-swap Detection | Settings Panel |
+| Face-swap Detection | Evidence Summary |
 |---------------------|----------------|
 | ![History](Screenshots/2025-12-24_15-03-55.png) | ![Settings](Screenshots/2025-12-24_15-04-0501.png) |
 
