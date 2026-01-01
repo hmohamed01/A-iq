@@ -4,8 +4,6 @@ A powerful, privacy-focused macOS application that detects AI-generated images u
 
 ![A-IQ Main Interface](Screenshots/2025-12-24_15-02-12.png)
 
-## Why A-IQ?
-
 ### 100% Local Processing — Your Photos Never Leave Your Mac
 
 Unlike web-based AI detectors that upload your images to remote servers, **A-IQ runs entirely on your device**. Your photos are analyzed locally using your Mac's Neural Engine — nothing is ever sent to the cloud.
@@ -70,11 +68,11 @@ Each analysis includes:
 
 ### Analysis Examples
 
-| Analysis Results | Signal Breakdown | Metadata Details |
+| Signal Breakdown | Image Metadata | Error Level Analysis |
 |-----------------|------------------|------------------|
 | ![Results View](Screenshots/2025-12-24_15-03-14.png) | ![Signal Breakdown](Screenshots/2025-12-24_15-03-39.png) | ![Metadata Panel](Screenshots/2025-12-24_15-03-47.png) |
 
-| History View | Settings | Forensic Analysis |
+| Face-swap Detection | Evidence Analysis |
 |--------------|----------|-------------------|
 | ![History](Screenshots/2025-12-24_15-03-55.png) | ![Settings](Screenshots/2025-12-24_15-04-0501.png) | &nbsp; |
 
@@ -241,7 +239,7 @@ When A-IQ detects faces, it activates a dedicated **deepfake detection neural ne
 
 ## Installation
 
-1. Download the latest release from the [Releases](https://github.com/yourusername/A-IQ/releases) page
+1. Download the latest release from the [Releases](https://github.com/hmohamed01/A-IQ/releases) page
 2. Move A-IQ.app to your Applications folder
 3. Launch A-IQ
 
@@ -300,7 +298,7 @@ A-IQ/
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/A-IQ.git
+git clone https://github.com/hmohamed01/A-IQ.git
 cd A-IQ
 
 # Build via command line
