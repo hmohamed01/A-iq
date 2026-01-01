@@ -58,24 +58,6 @@ playground.xcworkspace
 Package.resolved
 
 # ===================
-# CocoaPods
-# ===================
-Pods/
-
-# ===================
-# Carthage
-# ===================
-Carthage/Build/
-
-# ===================
-# Fastlane
-# ===================
-fastlane/report.xml
-fastlane/Preview.html
-fastlane/screenshots/**/*.png
-fastlane/test_output
-
-# ===================
 # IDE / Editor
 # ===================
 .cursor/
@@ -85,45 +67,41 @@ fastlane/test_output
 *.sublime-workspace
 
 # ===================
-# Project Documents (Not part of app)
+# Development Documents
 # ===================
 Planning/
 BUILD_INSTRUCTIONS.md
 MAINTENANCE.md
-CLAUDE.md
-GUMROAD_LISTING.md
 
 # ===================
-# Scripts (Development only, not packaging)
-# ===================
-scripts/convert_*.py
-scripts/*.log
-
-# ===================
-# Distribution output
+# Distribution
 # ===================
 dist/
 
 # ===================
-# Source assets (not needed for build)
+# Source Assets
 # ===================
 AppIcon.svg
 gumroad-icon*.png
 
 # ===================
-# Large binary resources (should be downloaded separately or via LFS)
+# Large Binary Resources
 # ===================
-# Uncomment if using Git LFS for these:
-# A-IQ/Resources/*.mlmodelc
-# A-IQ/Resources/c2patool
+# Models and binaries not included in repo
+# Download separately or use Git LFS
+A-IQ/Resources/*.mlmodelc
+A-IQ/Resources/c2patool
+A-IQ/Resources/trust_list.json
 
 # ===================
-# Test assets
+# Test Assets
 # ===================
 test-images/
 
 # ===================
-# Model conversion artifacts
+# Model Conversion
 # ===================
 scripts/model_conversion/*.mlmodelc/
 scripts/model_conversion/*.mlpackage/
+scripts/model_conversion/venv/
+scripts/model_conversion/*.log

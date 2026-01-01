@@ -1,11 +1,44 @@
 # A-IQ: AI Image Detection for macOS
 
-A native macOS application that analyzes images to determine whether they are AI-generated, AI-enhanced, or authentic photographs. All processing happens locally on your Mac with no data sent to external servers.
+A powerful, privacy-focused macOS application that detects AI-generated images using advanced machine learning and forensic analysis. A-IQ combines five independent detection methods to provide reliable results — all while processing images entirely on your device.
 
-## Features
+![A-IQ Main Interface](Screenshots/2025-12-24_15-02-12.png)
 
-### Multi-Signal Detection
-A-IQ combines five independent detection methods for reliable results:
+## Why A-IQ?
+
+### 100% Local Processing — Your Photos Never Leave Your Mac
+
+Unlike web-based AI detectors that upload your images to remote servers, **A-IQ runs entirely on your device**. Your photos are analyzed locally using your Mac's Neural Engine — nothing is ever sent to the cloud.
+
+- ✓ No account required
+- ✓ No internet connection needed
+- ✓ No data collection or analytics
+- ✓ No privacy concerns
+
+**Your images stay on your Mac. Period.**
+
+## Quick Start
+
+### Simple Workflow
+
+1. **Drag** any image onto A-IQ
+2. **Drop** it in the analysis window
+3. **Get** an instant AI probability score
+
+Analysis typically completes in under 3 seconds.
+
+### Multiple Input Methods
+
+| Method | How |
+|--------|-----|
+| **Drag and Drop** | Drag any image onto the A-IQ window |
+| **Open File** | Click "Open File" or press `Cmd+O` |
+| **Paste** | Copy an image and press `Cmd+V` |
+| **Batch Analysis** | Select "Open Folder" to analyze multiple images |
+
+## Multi-Signal Detection
+
+A-IQ doesn't rely on a single method — it combines **five independent detection signals** for maximum accuracy:
 
 | Signal | Default Weight | With Faces | Method |
 |--------|----------------|------------|--------|
@@ -13,19 +46,173 @@ A-IQ combines five independent detection methods for reliable results:
 | **Provenance** | 30% | 25% | C2PA content credentials verification |
 | **Metadata** | 15% | 10% | EXIF/IPTC anomaly analysis |
 | **Forensics** | 15% | 10% | Error Level Analysis (ELA) + FFT |
-| **Face-Swap** | — | 20% | Face boundary forensics (Vision) |
+| **Face-Swap** | — | 20% | Deepfake detection (Vision + ML) |
 
 *When faces are detected, weights automatically redistribute to include face-swap analysis.*
 
-### Key Capabilities
+## Understanding Results
+
+A-IQ provides a confidence score from 0-100%:
+
+| Score | Classification | Meaning |
+|-------|---------------|---------|
+| < 30% | **Likely Authentic** | Low probability of AI generation |
+| 30-70% | **Uncertain** | Review recommended |
+| > 70% | **Likely AI-Generated** | High probability of AI generation |
+| 100% | **Confirmed AI-Generated** | C2PA credentials prove AI origin |
+
+Each analysis includes:
+- **Overall AI Probability Score** (0-100%)
+- **Classification**: Likely Authentic, Uncertain, or Likely AI-Generated
+- **Signal Breakdown**: See how each detection method contributed
+- **Evidence Summary**: Specific indicators found in the image
+- **Visual Forensics**: View ELA overlays to see detected anomalies
+
+### Analysis Examples
+
+| Analysis Results | Signal Breakdown | Metadata Details |
+|-----------------|------------------|------------------|
+| ![Results View](Screenshots/2025-12-24_15-03-14.png) | ![Signal Breakdown](Screenshots/2025-12-24_15-03-39.png) | ![Metadata Panel](Screenshots/2025-12-24_15-03-47.png) |
+
+| History View | Settings | Forensic Analysis |
+|--------------|----------|-------------------|
+| ![History](Screenshots/2025-12-24_15-03-55.png) | ![Settings](Screenshots/2025-12-24_15-04-0501.png) | &nbsp; |
+
+## How Detection Works
+
+### 1. Neural Network Analysis (40% weight)
+
+A-IQ uses **SigLIP** (Sigmoid Loss Image-Language Pretraining), a state-of-the-art vision transformer. This advanced neural network recognizes subtle patterns that distinguish AI-generated content from authentic photographs.
+
+**Technical Details:**
+- Architecture: Vision Transformer (ViT)
+- Input: 224×224 pixels (center crop)
+- Output: [AI probability, Human probability]
+- Hardware: Neural Engine on Apple Silicon, GPU fallback on Intel
+- Timeout: 2.0 seconds
+- Detects content from DALL-E, Midjourney, Stable Diffusion, Flux, Adobe Firefly, and 60+ other AI generators
+
+### 2. Content Credentials (C2PA) Verification (30% weight)
+
+A-IQ performs **deep C2PA analysis** using the industry-standard Content Authenticity Initiative protocol backed by Adobe, Microsoft, Google, and the BBC.
+
+**Core Verification:**
+- Cryptographic signature validation against trusted signer database
+- Detection of 60+ AI tools in credential claims
+- Definitive proof when valid credentials indicate AI origin
+
+**Enhanced C2PA Parsing:**
+- **AI Generation Assertions**: Parses `c2pa.ai_generative_info` and `c2pa.synthetic` for explicit AI disclosure
+- **Model/Prompt Extraction**: Extracts AI model name, generation prompt, and parameters (cfg_scale, steps, seed)
+- **Ingredient Analysis**: Detects AI-generated parent images in composites via `c2pa.ingredients`
+- **Provenance Chain Scanning**: Identifies AI tool usage at any point in the image's history
+- **Training Status**: Checks `c2pa.ai_training` assertions
+
+**Nuanced Scoring:**
+| Score | Condition |
+|-------|-----------|
+| 100% | Valid C2PA + known AI tool or explicit AI assertion |
+| 95% | Explicit AI assertion (without valid credentials) |
+| 85% | AI tool in provenance chain |
+| 80% | Parent image is AI-generated |
+| 70% | Tampered credentials |
+| 50% | No credentials (neutral) |
+| 20% | Valid non-AI credentials (likely authentic) |
+
+### 3. Metadata Forensics (15% weight)
+
+Deep inspection across multiple metadata layers:
+
+**AI Software Detection (60+ signatures):**
+- DALL-E, Midjourney, Stable Diffusion, Flux, Fooocus, ComfyUI, and many more
+- AI pipeline software (Pillow, PyTorch, OpenCV, ImageMagick)
+
+**Advanced Anomaly Detection:**
+- **Missing EXIF**: No EXIF data in JPEG files (common in AI-generated images)
+- **Timestamp Anomalies**: Future dates, pre-digital era dates, inconsistencies
+- **Thumbnail Mismatch**: Compares embedded thumbnail to main image (>25% difference flagged)
+- **Color Profile Analysis**: Detects generic/uncalibrated profiles, camera brand vs profile mismatches
+- **JPEG Compression Analysis**: Identifies AI pipeline software, unusual JFIF density
+- **XMP/IPTC Deep Inspection**: Scans for AI terms (prompts, cfg scale, sampler, seed, etc.)
+
+### 4. Forensic Image Analysis (15% weight)
+
+Combines traditional and frequency domain analysis:
+
+**Error Level Analysis (ELA)** — Traditional Forensics (60% of forensic score)
+- Recompresses image at 90% quality and computes pixel-by-pixel differences
+- AI-generated images often show uniform compression patterns
+- Edited photos show localized differences at manipulation boundaries
+
+**FFT Frequency Spectrum Analysis** — Advanced Forensics (40% of forensic score)
+- 2D Fast Fourier Transform via Accelerate vDSP for hardware acceleration
+- Radial power spectrum analysis (azimuthal averaging)
+- Power law fitting: natural images follow 1/f^n decay (slope typically -2 to -3)
+- Spectral peak detection for GAN upsampling artifacts
+- Detects anomalous frequency patterns that betray synthetic origin
+
+**Constraints:**
+- Max resolution: 3840×2160 (downscaled if larger)
+- FFT size: Power of 2, max 512×512
+- 3-second timeout
+
+### 5. Face-Swap & Deepfake Detection (20% weight when faces present)
+
+When A-IQ detects faces, it activates a dedicated **deepfake detection neural network** trained on the FaceForensics++ dataset (~94% accuracy).
+
+**ML-Powered Detection:**
+- Uses SigLIP Vision Transformer fine-tuned for face manipulation detection
+- Each face extracted with 20% padding for context
+- Resized to 224×224 and analyzed by DeepfakeDetector model
+- Per-face probability scores with visual bounding boxes
+
+**Dynamic Weight Behavior:**
+- When faces detected: Adds 20% weight, other detectors reduce proportionally
+- When no faces: Returns neutral result, original weights apply
+
+**Per-Face Results:**
+- Deepfake probability score (0-100%)
+- Classification: Low (<30%), Medium (30-70%), High (>70%)
+- Visual bounding box highlighting analyzed regions
+- List of detected artifacts with severity
+
+## Use Cases
+
+- **Journalists & Fact-checkers**: Verify image authenticity before publishing
+- **Content Moderators**: Screen submissions for AI-generated content
+- **Photographers**: Prove your work is authentic
+- **Researchers**: Analyze datasets for synthetic content
+- **Security Professionals**: Investigate potential deepfakes
+- **Anyone**: Satisfy curiosity about suspicious images
+
+## Batch Processing
+
+- **Folder scanning**: Analyze entire folders at once
+- **Batch queue**: Process multiple images in parallel (max 4 concurrent)
+- **History**: Review all past analyses with search and filtering
+- **Export Reports**: Generate PDF or JSON reports
+
+## Supported Formats
+
+- JPEG / JPG
+- PNG
+- HEIC / HEIF
+- WebP
+- TIFF
+- AVIF
+
+## Key Features
+
 - **Privacy-First**: All processing happens locally. No images uploaded to any server.
 - **Offline Capable**: Works without an internet connection.
 - **Native Performance**: Optimized for Apple Silicon with Neural Engine acceleration.
 - **Batch Analysis**: Analyze entire folders of images.
 - **Export Reports**: Generate PDF or JSON reports of findings.
-- **History**: Browse and search past analysis results.
+- **History**: Browse and search past analysis results (max 1000 records).
+- **Dark Mode**: Full support for macOS appearance modes.
+- **Keyboard Shortcuts**: Power user workflows with keyboard shortcuts.
 
-## Recent Improvements (v1.1 - December 2024)
+## Recent Improvements (v1.1 - December 2025)
 
 ### Critical Fixes
 1. **Graceful Error Handling**: Replaced fatal errors with user-friendly dialogs
@@ -47,139 +234,20 @@ A-IQ combines five independent detection methods for reliable results:
 ## Requirements
 
 - macOS 14.0 (Sonoma) or later
-- Apple Silicon or Intel Mac
+- Apple Silicon (M1/M2/M3/M4) recommended for best performance
+- Intel Macs supported
+- 400MB disk space
+- No internet connection required
 
 ## Installation
 
-1. Download the latest release from the Releases page
+1. Download the latest release from the [Releases](https://github.com/yourusername/A-IQ/releases) page
 2. Move A-IQ.app to your Applications folder
 3. Launch A-IQ
 
-## Usage
-
-### Analyzing Images
-
-| Method | How |
-|--------|-----|
-| **Drag and Drop** | Drag any image onto the A-IQ window |
-| **Open File** | Click "Open File" or press `Cmd+O` |
-| **Paste** | Copy an image and press `Cmd+V` |
-| **Batch Analysis** | Select "Open Folder" to analyze multiple images |
-
-### Understanding Results
-
-A-IQ provides a confidence score from 0-100%:
-
-| Score | Classification | Meaning |
-|-------|---------------|---------|
-| < 30% | **Likely Authentic** | Low probability of AI generation |
-| 30-70% | **Uncertain** | Review recommended |
-| > 70% | **Likely AI-Generated** | High probability of AI generation |
-| 100% | **Confirmed AI-Generated** | C2PA credentials prove AI origin |
-
-### Signal Breakdown
-
-Each analysis shows weighted contributions from five independent detectors:
-
-- **ML Detection (40%/35%)**: SigLIP Vision Transformer trained on modern AI generators (DALL-E, Midjourney, Stable Diffusion, etc.)
-- **Provenance (30%/25%)**: C2PA content credentials with deep parsing of AI assertions, ingredients, and provenance chains
-- **Metadata (15%/10%)**: Analyzes EXIF/IPTC/XMP for 60+ AI software signatures, thumbnail mismatches, color profile anomalies, and embedded generation parameters
-- **Forensics (15%/10%)**: Error Level Analysis and FFT frequency spectrum analysis detect compression inconsistencies and synthetic patterns
-- **Face-Swap (—/20%)**: When faces are detected, analyzes boundary regions for deepfake/face-swap artifacts including compression edges, noise discontinuities, and lighting inconsistencies
-
-## Supported Formats
-
-- JPEG / JPG
-- PNG
-- HEIC / HEIF
-- WebP
-- TIFF
-- AVIF
-
-## How Detection Works
-
-### ML Detection (SigLIP Model)
-The core ML detector uses a SigLIP (Sigmoid Loss Image-Language Pretraining) Vision Transformer model. Images are resized to 224x224 pixels and processed through the neural network, which outputs probabilities for AI-generated vs. human-created content.
-
-**Model Details:**
-- Architecture: Vision Transformer (ViT)
-- Input: 224x224 pixels (center crop)
-- Output: [AI probability, Human probability]
-- Hardware: Neural Engine on Apple Silicon, GPU fallback on Intel
-
-### Provenance (C2PA)
-Checks for Content Credentials embedded in images using the C2PA standard. Provides the most definitive signal when present.
-
-**Core Detection:**
-- Validates C2PA signatures against trusted signer database
-- Detects 60+ AI tools (shared with Metadata analyzer)
-- Valid C2PA + known AI tool = definitive proof of AI generation
-
-**Enhanced C2PA Parsing:**
-- **AI Generation Assertions**: Parses `c2pa.ai_generative_info` and `c2pa.synthetic` for explicit AI disclosure
-- **Model/Prompt Extraction**: Extracts AI model name, generation prompt, and parameters (cfg_scale, steps, seed)
-- **Ingredient Analysis**: Detects AI-generated parent images in composites via `c2pa.ingredients`
-- **Provenance Chain Scanning**: Identifies AI tool usage at any step in the image's history
-- **Training Status**: Checks `c2pa.ai_training` assertions
-
-**Nuanced Scoring:**
-| Score | Condition |
-|-------|-----------|
-| 100% | Valid C2PA + known AI tool or explicit AI assertion |
-| 95% | Explicit AI assertion (without valid credentials) |
-| 85% | AI tool in provenance chain |
-| 80% | Parent image is AI-generated |
-| 70% | Tampered credentials |
-| 50% | No credentials (neutral) |
-| 20% | Valid non-AI credentials (likely authentic) |
-
-### Metadata Analysis
-Examines EXIF, IPTC, TIFF, and XMP metadata using multiple detection methods:
-
-**AI Software Detection (60+ signatures):**
-- DALL-E, Midjourney, Stable Diffusion, Flux, Fooocus, ComfyUI, and many more
-- Detects AI pipeline software (Pillow, PyTorch, OpenCV, ImageMagick)
-
-**Anomaly Detection:**
-- Missing EXIF data in JPEG files (common in AI-generated images)
-- Timestamp anomalies (future dates, pre-digital era dates)
-- Absence of camera information
-
-**Advanced Checks:**
-- Thumbnail mismatch detection (compares embedded thumbnail to main image)
-- Color profile analysis (generic profiles, camera/profile brand mismatches)
-- XMP/IPTC deep inspection (AI prompts, generation parameters, seed values)
-
-### Forensic Analysis
-Performs Error Level Analysis (ELA) on JPEG images:
-1. Recompresses the image at 90% quality
-2. Computes pixel-by-pixel differences
-3. Identifies regions with inconsistent compression artifacts
-4. AI-generated images often show uniform error levels, while edited photos show localized differences
-
-For PNG/lossless formats, noise pattern analysis detects variance inconsistencies across image blocks.
-
-### Face-Swap Detection
-When faces are detected in an image, A-IQ applies ML-based deepfake detection to identify face-swap manipulation:
-
-**ML-Based Detection:**
-Uses a SigLIP Vision Transformer model fine-tuned on the FaceForensics++ dataset (~94% accuracy). Each detected face is:
-1. Cropped with 20% padding for context
-2. Resized to 224×224 pixels
-3. Analyzed by the DeepfakeDetector neural network
-4. Scored based on "Fake" probability output
-
-**Per-Face Analysis:**
-Each detected face receives individual analysis with:
-- Deepfake probability score (0-100%)
-- Classification: Low (<30%), Medium (30-70%), High (>70%)
-- List of detected artifacts with severity
-- Face bounding box for visual reference
-
-**Dynamic Weighting:**
-When faces are present, the overall analysis weights redistribute to give face-swap detection 20% influence, as this signal is highly relevant for images containing people.
-
 ## Architecture
+
+A-IQ is built as a native macOS app using SwiftUI and modern concurrency patterns:
 
 ```
 A-IQ/
@@ -194,6 +262,32 @@ A-IQ/
 ├── Settings/      # User preferences
 └── Resources/     # ML model, c2patool, trust list
 ```
+
+### Technical Highlights
+
+**Concurrency Model:**
+- Actor-based architecture for thread safety
+- Parallel detector execution via `async let`
+- Max 4 concurrent analyses with memory throttling (2GB limit)
+- Cancellable analysis tasks with proper cleanup
+
+**Performance:**
+- Neural Engine acceleration on Apple Silicon
+- GPU fallback on Intel Macs
+- Large images downscaled to 4K for forensic analysis
+- Lazy model loading to reduce startup time
+
+**Storage:**
+- SwiftData for analysis history
+- Max 1000 records with automatic cleanup
+- JPEG-compressed thumbnails (70% quality)
+- Full results stored as JSON
+
+**Security:**
+- Path validation with symlink resolution prevents path traversal
+- File size limits (100MB maximum)
+- Input sanitization for all file paths
+- Sandboxed external tool execution (c2patool)
 
 ## Building from Source
 
@@ -238,52 +332,14 @@ The following files are required but not included in the repository:
    - JSON file listing trusted C2PA signers
    - Place in `A-IQ/Resources/`
 
-## Privacy
+### Creating DMG Installer
 
-A-IQ is designed with privacy as a core principle:
+```bash
+# Run the packaging script
+bash scripts/package.sh
+```
 
-- **No Network Access**: The app makes no network requests
-- **Local Processing**: All analysis runs on-device using Core ML
-- **No Telemetry**: No usage data or analytics collected
-- **No Cloud**: Images never leave your Mac
-- **Sandboxed**: Full macOS app sandbox with minimal permissions
-
-## Technical Details
-
-### Concurrency
-- Actor-based architecture for thread safety
-- Parallel detector execution via `async let`
-- Max 4 concurrent analyses with memory throttling (2GB limit)
-- Cancellable analysis tasks
-
-### Performance
-- Neural Engine acceleration on Apple Silicon
-- GPU fallback on Intel Macs
-- Large images downscaled to 4K for forensic analysis
-- Lazy model loading to reduce startup time
-
-### Storage
-- SwiftData for analysis history
-- Max 1000 records with automatic cleanup
-- JPEG-compressed thumbnails (70% quality)
-- Full results stored as JSON
-
-## Error Handling
-
-The application includes comprehensive error handling:
-
-- **Database Errors**: Graceful initialization failure handling
-- **File Errors**: Clear messages for invalid files, sizes, formats
-- **Analysis Errors**: Individual detector failures don't stop analysis
-- **Cancellation**: Proper cleanup when analysis is cancelled
-- **User Feedback**: All errors shown with actionable messages
-
-## Security
-
-- **Path Validation**: Symlink resolution prevents path traversal
-- **File Size Limits**: 100MB maximum file size
-- **Input Sanitization**: All file paths validated before processing
-- **Sandboxing**: External tools run with proper isolation
+The DMG will be created in `dist/A-IQ.dmg` with styled background and Applications symlink.
 
 ## Configuration
 
@@ -306,6 +362,18 @@ Key configuration values are centralized in `Models/AnalysisConstants.swift`:
 - `likelyAuthenticThreshold`: Score threshold for authentic (default: 0.30)
 - `likelyAIGeneratedThreshold`: Score threshold for AI (default: 0.70)
 
+## Privacy Promise
+
+A-IQ is built on a simple principle: **your photos are yours**.
+
+- No analytics or telemetry
+- No network requests
+- No data collection
+- Works completely offline after installation
+- Full macOS app sandbox with minimal permissions
+
+In an age of data harvesting and privacy erosion, A-IQ lets you detect AI images without sacrificing your privacy.
+
 ## License
 
 MIT License - See LICENSE file for details.
@@ -317,21 +385,7 @@ MIT License - See LICENSE file for details.
 - [SigLIP](https://arxiv.org/abs/2303.15343) research for the vision transformer architecture
 - Research community for advances in synthetic media detection
 
-## Contributing
-
-Contributions are welcome! When contributing, please:
-
-1. Follow existing code style and patterns
-2. Add error handling for new features
-3. Update documentation for user-facing changes
-4. Test error scenarios and edge cases
-5. Use centralized constants for configuration values
-
-## Support
-
-For issues, feature requests, or questions, please refer to the project's issue tracker or contact the maintainers.
-
 ---
 
-**Version**: 1.1  
-**Last Updated**: December 2024
+**Version**: 1.1
+**Last Updated**: December 2025

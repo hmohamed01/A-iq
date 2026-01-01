@@ -65,12 +65,6 @@ struct AppCommands: Commands {
             Button("About A-IQ") {
                 showAboutWindow()
             }
-
-            Divider()
-
-            Button("Report an Issue...") {
-                reportIssue()
-            }
         }
 
         // Remove tab bar menu items (Show All Tabs, Show/Hide Tab Bar)
@@ -135,12 +129,6 @@ struct AppCommands: Commands {
 
     private func showAboutWindow() {
         NSApplication.shared.orderFrontStandardAboutPanel(nil)
-    }
-
-    private func reportIssue() {
-        if let url = URL(string: "https://agenticstudio.gumroad.com/l/mrxnbp") {
-            NSWorkspace.shared.open(url)
-        }
     }
 }
 
