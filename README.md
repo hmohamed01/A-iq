@@ -88,7 +88,7 @@ A-IQ uses **SigLIP** (Sigmoid Loss Image-Language Pretraining), a state-of-the-a
 - Output: [AI probability, Human probability]
 - Hardware: Neural Engine on Apple Silicon, GPU fallback on Intel
 - Timeout: 2.0 seconds
-- Detects content from DALL-E, Midjourney, Stable Diffusion, Flux, Adobe Firefly, and 60+ other AI generators
+- Detects content from Grok, DALL-E, Midjourney, Stable Diffusion, Flux, Adobe Firefly, and 60+ other AI generators
 
 ### 2. Content Credentials (C2PA) Verification (30% weight)
 
@@ -122,7 +122,7 @@ A-IQ performs **deep C2PA analysis** using the industry-standard Content Authent
 Deep inspection across multiple metadata layers:
 
 **AI Software Detection (60+ signatures):**
-- DALL-E, Midjourney, Stable Diffusion, Flux, Fooocus, ComfyUI, and many more
+- Grok, DALL-E, Midjourney, Stable Diffusion, Flux, Fooocus, ComfyUI, and many more
 - AI pipeline software (Pillow, PyTorch, OpenCV, ImageMagick)
 
 **Advanced Anomaly Detection:**
@@ -210,9 +210,16 @@ When A-IQ detects faces, it activates a dedicated **deepfake detection neural ne
 - **Dark Mode**: Full support for macOS appearance modes.
 - **Keyboard Shortcuts**: Power user workflows with keyboard shortcuts.
 
-## Recent Improvements (v1.1 - December 2025)
+## Recent Improvements (v1.2 - January 2026)
 
-### Critical Fixes
+### New Features
+1. **Grok/xAI Detection**: Added comprehensive detection for xAI's Grok image generator
+   - Detects: Grok, xAI, Aurora, Grok Imagine, Grok 2, grok-2-image
+   - Note: xAI does not implement C2PA credentials; detection relies on ML analysis and metadata signatures
+
+### v1.1 (December 2025)
+
+**Critical Fixes:**
 1. **Graceful Error Handling**: Replaced fatal errors with user-friendly dialogs
 2. **Complete Menu Implementation**: All menu commands now functional
 3. **Proper Task Cancellation**: Analysis can be cancelled without errors
@@ -220,7 +227,7 @@ When A-IQ detects faces, it activates a dedicated **deepfake detection neural ne
 5. **Input Validation**: File size limits (100MB) and security improvements
 6. **Constants Extraction**: Centralized configuration for easier maintenance
 
-### Code Quality (v1.1)
+**Code Quality:**
 - Centralized constants in `AnalysisConstants.swift`
 - Improved error handling patterns
 - Better security with path validation and symlink resolution
@@ -402,5 +409,5 @@ MIT License - See LICENSE file for details.
 
 ---
 
-**Version**: 1.1
-**Last Updated**: December 2025
+**Version**: 1.2
+**Last Updated**: January 2026

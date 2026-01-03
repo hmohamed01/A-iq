@@ -324,6 +324,15 @@ extension MetadataResult {
         "Microsoft Designer",
         "Copilot",
 
+        // xAI
+        "Grok",
+        "xAI",
+        "Aurora",           // xAI's image generation model
+        "Grok Imagine",     // xAI's image/video feature name
+        "Grok 2",           // Version identifier
+        "Grok-2",           // Version identifier (hyphenated)
+        "grok-2-image",     // API model identifier
+
         // Adobe
         "Adobe Firefly",
         "Photoshop Generative",
