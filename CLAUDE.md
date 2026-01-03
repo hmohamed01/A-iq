@@ -332,9 +332,15 @@ init(settingsManager: SettingsManager, orchestrator: AnalysisOrchestrator, input
 
 No third-party CocoaPods or Swift Package Manager dependencies.
 
-## Recent Code Improvements (v1.1 - December 2024)
+## Recent Code Improvements (v1.2 - January 2026)
 
-### Critical Fixes
+### New Features (v1.2)
+
+1. **Grok/xAI Detection**: Added comprehensive detection for xAI's Grok image generator
+   - New patterns: `Grok`, `xAI`, `Aurora`, `Grok Imagine`, `Grok 2`, `Grok-2`, `grok-2-image`
+   - Note: xAI does not implement C2PA credentials; detection relies on ML analysis and metadata signatures
+
+### Critical Fixes (v1.1)
 
 1. **Graceful Error Handling**: Replaced `fatalError` in app initialization with user-friendly error dialogs. Uses `NSApplication.terminate()` with an unreachable `fatalError()` to satisfy Swift's definite initialization requirement for `modelContainer`.
 2. **Complete Menu Implementation**: All menu commands (Open File, Open Folder, Paste, Export) now functional
