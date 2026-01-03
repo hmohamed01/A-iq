@@ -210,9 +210,11 @@ When A-IQ detects faces, it activates a dedicated **deepfake detection neural ne
 - **Dark Mode**: Full support for macOS appearance modes.
 - **Keyboard Shortcuts**: Power user workflows with keyboard shortcuts.
 
-## Recent Improvements (v1.2 - January 2026)
+## Recent Improvements
 
-### New Features
+### v1.2 (January 2026)
+
+**New Features:**
 1. **Grok/xAI Detection**: Added comprehensive detection for xAI's Grok image generator
    - Detects: Grok, xAI, Aurora, Grok Imagine, Grok 2, grok-2-image
    - Note: xAI does not implement C2PA credentials; detection relies on ML analysis and metadata signatures
