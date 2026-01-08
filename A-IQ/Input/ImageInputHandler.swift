@@ -75,22 +75,21 @@ actor ImageInputHandler {
 
     /// Present file picker for image selection
     /// Implements: Req 1.3, 1.4
-    /// Note: nonisolated to avoid actor-hopping overhead
-    nonisolated func presentFilePicker(allowsMultiple: Bool = true) async -> [URL] {
+    /// Using @MainActor for Swift 6 strict concurrency compliance
+    @MainActor
+    func presentFilePicker(allowsMultiple: Bool = true) async -> [URL] {
         await withCheckedContinuation { continuation in
-            DispatchQueue.main.async {
-                let panel = NSOpenPanel()
-                panel.canChooseFiles = true
-                panel.canChooseDirectories = false
-                panel.allowsMultipleSelection = allowsMultiple
-                panel.allowedContentTypes = Self.supportedUTTypes
+            let panel = NSOpenPanel()
+            panel.canChooseFiles = true
+            panel.canChooseDirectories = false
+            panel.allowsMultipleSelection = allowsMultiple
+            panel.allowedContentTypes = Self.supportedUTTypes
 
-                panel.begin { response in
-                    if response == .OK {
-                        continuation.resume(returning: panel.urls)
-                    } else {
-                        continuation.resume(returning: [])
-                    }
+            panel.begin { response in
+                if response == .OK {
+                    continuation.resume(returning: panel.urls)
+                } else {
+                    continuation.resume(returning: [])
                 }
             }
         }
@@ -98,20 +97,20 @@ actor ImageInputHandler {
 
     /// Present folder picker for batch analysis
     /// Implements: Req 1.6
-    nonisolated func presentFolderPicker() async -> URL? {
+    /// Using @MainActor for Swift 6 strict concurrency compliance
+    @MainActor
+    func presentFolderPicker() async -> URL? {
         await withCheckedContinuation { continuation in
-            DispatchQueue.main.async {
-                let panel = NSOpenPanel()
-                panel.canChooseFiles = false
-                panel.canChooseDirectories = true
-                panel.allowsMultipleSelection = false
+            let panel = NSOpenPanel()
+            panel.canChooseFiles = false
+            panel.canChooseDirectories = true
+            panel.allowsMultipleSelection = false
 
-                panel.begin { response in
-                    if response == .OK {
-                        continuation.resume(returning: panel.url)
-                    } else {
-                        continuation.resume(returning: nil)
-                    }
+            panel.begin { response in
+                if response == .OK {
+                    continuation.resume(returning: panel.url)
+                } else {
+                    continuation.resume(returning: nil)
                 }
             }
         }

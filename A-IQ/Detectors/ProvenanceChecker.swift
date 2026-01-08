@@ -129,9 +129,12 @@ actor ProvenanceChecker {
         }
     }
 
-    /// Execute c2patool process asynchronously
+    /// Execute c2patool process asynchronously using actor-based output collection
+    /// for Swift 6 strict concurrency compliance
     private func executeProcess(toolPath: URL, arguments: [String]) async throws -> Data {
-        try await withCheckedThrowingContinuation { continuation in
+        let collector = ProcessOutputCollector()
+
+        return try await withCheckedThrowingContinuation { continuation in
             let process = Process()
             process.executableURL = toolPath
             process.arguments = arguments
@@ -141,79 +144,68 @@ actor ProvenanceChecker {
             process.standardOutput = outputPipe
             process.standardError = errorPipe
 
-            // Read output asynchronously to prevent pipe buffer deadlock
-            // Must read WHILE process is running, not after termination
-            var outputData = Data()
-            var errorData = Data()
-            var continuationResumed = false
-            let lock = NSLock()
-
-            // Read stdout asynchronously
-            outputPipe.fileHandleForReading.readabilityHandler = { handle in
+            // Read stdout asynchronously using actor for thread-safe collection
+            outputPipe.fileHandleForReading.readabilityHandler = { @Sendable handle in
                 let data = handle.availableData
                 if !data.isEmpty {
-                    lock.lock()
-                    outputData.append(data)
-                    lock.unlock()
+                    Task { await collector.appendOutput(data) }
                 }
             }
 
             // Read stderr asynchronously
-            errorPipe.fileHandleForReading.readabilityHandler = { handle in
+            errorPipe.fileHandleForReading.readabilityHandler = { @Sendable handle in
                 let data = handle.availableData
                 if !data.isEmpty {
-                    lock.lock()
-                    errorData.append(data)
-                    lock.unlock()
+                    Task { await collector.appendError(data) }
                 }
             }
 
-            process.terminationHandler = { terminatedProcess in
+            process.terminationHandler = { @Sendable terminatedProcess in
                 // Clean up handlers
                 outputPipe.fileHandleForReading.readabilityHandler = nil
                 errorPipe.fileHandleForReading.readabilityHandler = nil
 
-                // Read any remaining data
-                lock.lock()
+                // Read any remaining data synchronously
                 let finalOutput = outputPipe.fileHandleForReading.readDataToEndOfFile()
-                if !finalOutput.isEmpty {
-                    outputData.append(finalOutput)
-                }
                 let finalError = errorPipe.fileHandleForReading.readDataToEndOfFile()
-                if !finalError.isEmpty {
-                    errorData.append(finalError)
-                }
 
-                guard !continuationResumed else {
-                    lock.unlock()
-                    return
-                }
-                continuationResumed = true
-                lock.unlock()
+                Task {
+                    // Append final data
+                    if !finalOutput.isEmpty {
+                        await collector.appendOutput(finalOutput)
+                    }
+                    if !finalError.isEmpty {
+                        await collector.appendError(finalError)
+                    }
 
-                // Check exit status
-                if terminatedProcess.terminationStatus == 0 {
-                    continuation.resume(returning: outputData)
-                } else if outputData.isEmpty {
-                    // No manifest found (exit code typically 1 with no output)
-                    continuation.resume(returning: Data())
-                } else {
-                    let errorMessage = String(data: errorData, encoding: .utf8) ?? "Unknown error"
-                    continuation.resume(throwing: DetectionError.c2paToolExecutionFailed(errorMessage))
+                    // Resume continuation only once
+                    let resumed = await collector.tryResume()
+                    guard resumed else { return }
+
+                    let outputData = await collector.getOutput()
+                    let errorData = await collector.getError()
+
+                    // Check exit status
+                    if terminatedProcess.terminationStatus == 0 {
+                        continuation.resume(returning: outputData)
+                    } else if outputData.isEmpty {
+                        // No manifest found (exit code typically 1 with no output)
+                        continuation.resume(returning: Data())
+                    } else {
+                        let errorMessage = String(data: errorData, encoding: .utf8) ?? "Unknown error"
+                        continuation.resume(throwing: DetectionError.c2paToolExecutionFailed(errorMessage))
+                    }
                 }
             }
 
             do {
                 try process.run()
             } catch {
-                lock.lock()
-                guard !continuationResumed else {
-                    lock.unlock()
-                    return
+                Task {
+                    let resumed = await collector.tryResume()
+                    guard resumed else { return }
+                    continuation.resume(throwing: DetectionError.c2paToolExecutionFailed(error.localizedDescription))
                 }
-                continuationResumed = true
-                lock.unlock()
-                continuation.resume(throwing: DetectionError.c2paToolExecutionFailed(error.localizedDescription))
             }
         }
     }
@@ -764,4 +756,37 @@ extension ProvenanceChecker {
         "C2PA",
         "Content Authenticity Initiative",
     ]
+}
+
+// MARK: - Process Output Collector
+
+/// Actor for thread-safe collection of process output data
+/// Replaces NSLock pattern for Swift 6 strict concurrency compliance
+private actor ProcessOutputCollector {
+    private var output = Data()
+    private var error = Data()
+    private var hasResumed = false
+
+    func appendOutput(_ data: Data) {
+        output.append(data)
+    }
+
+    func appendError(_ data: Data) {
+        error.append(data)
+    }
+
+    func getOutput() -> Data {
+        output
+    }
+
+    func getError() -> Data {
+        error
+    }
+
+    /// Attempts to mark continuation as resumed. Returns true if this is the first call.
+    func tryResume() -> Bool {
+        guard !hasResumed else { return false }
+        hasResumed = true
+        return true
+    }
 }

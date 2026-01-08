@@ -15,7 +15,9 @@ actor ForensicAnalyzer {
     private let ciContext: CIContext
 
     /// Cached FFT setup for 256-point FFT (log2(256) = 8)
-    private var fftSetup: FFTSetup?
+    /// Using nonisolated(unsafe) because fftSetup is only written once during init
+    /// and read once during deinit - both are non-isolated contexts in Swift 6
+    private nonisolated(unsafe) var fftSetup: FFTSetup?
     private let fftLog2n: vDSP_Length = 8 // For 256-point FFT
 
     // MARK: Initialization
