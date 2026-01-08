@@ -10,7 +10,7 @@ SCHEME="A-IQ"
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD_DIR="$PROJECT_DIR/build"
 DIST_DIR="$PROJECT_DIR/dist"
-DMG_NAME="$APP_NAME.dmg"
+# DMG_NAME will be set after we know the app version
 VOLUME_NAME="$APP_NAME"
 DMG_SIZE="400m"
 
@@ -32,9 +32,9 @@ echo_error() {
     echo -e "${RED}Error:${NC} $1"
 }
 
-# Clean previous builds
+# Clean previous builds (preserve dist folder for version history)
 echo_step "Cleaning previous builds..."
-rm -rf "$BUILD_DIR" "$DIST_DIR"
+rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR" "$DIST_DIR"
 
 # Build release version
@@ -62,6 +62,9 @@ echo_step "Build successful: $APP_PATH"
 APP_VERSION=$(defaults read "$APP_PATH/Contents/Info" CFBundleShortVersionString 2>/dev/null || echo "1.0")
 BUILD_NUMBER=$(defaults read "$APP_PATH/Contents/Info" CFBundleVersion 2>/dev/null || echo "1")
 echo "  Version: $APP_VERSION ($BUILD_NUMBER)"
+
+# Set DMG name with version
+DMG_NAME="$APP_NAME-v$APP_VERSION.dmg"
 
 # Create background image
 echo_step "Creating DMG background image..."
