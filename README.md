@@ -1,5 +1,12 @@
 # A-IQ: AI Image Detection for macOS
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-1.3-brightgreen.svg)](https://github.com/hmohamed01/A-IQ/releases)
+[![Platform](https://img.shields.io/badge/platform-macOS-lightgrey.svg)](https://developer.apple.com/macos/)
+[![macOS](https://img.shields.io/badge/macOS-14.0%2B-orange.svg)](https://www.apple.com/macos/sonoma/)
+[![Swift](https://img.shields.io/badge/Swift-5.9-FA7343.svg?logo=swift&logoColor=white)](https://swift.org)
+[![Privacy](https://img.shields.io/badge/privacy-100%25_local-success.svg)](README.md#privacy-promise)
+
 A powerful, privacy-focused macOS application that detects AI-generated images using advanced machine learning and forensic analysis. A-IQ combines five independent detection methods to provide reliable results — all while processing images entirely on your device.
 
 ![A-IQ Main Interface](Screenshots/2025-12-24_15-02-12.png)
@@ -411,5 +418,5 @@ MIT License - See LICENSE file for details.
 
 ---
 
-**Version**: 1.2
+**Version**: 1.3
 **Last Updated**: January 2026
